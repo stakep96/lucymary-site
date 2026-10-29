@@ -43,7 +43,7 @@ export async function SiteHeader() {
         </div>
         <div className="mobile-header-actions">
           <HeaderSearch mobile />
-          <CartDrawer />
+          <CartDrawer mobile />
         </div>
       </div>
       <nav className="category-nav shell" aria-label="Categorias principais">

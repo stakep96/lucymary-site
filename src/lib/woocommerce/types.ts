@@ -43,6 +43,8 @@ export interface StoreProduct {
   images: StoreImage[];
   prices: StorePrices;
   is_in_stock: boolean;
+  is_purchasable?: boolean;
+  sold_individually?: boolean;
   on_sale: boolean;
   categories: Array<{ id: number; name: string; slug: string }>;
   tags?: Array<{ id: number; name: string; slug: string }>;

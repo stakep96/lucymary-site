@@ -7,6 +7,7 @@ import "@fontsource/poppins/500.css";
 import "@fontsource/poppins/600.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { CartProvider } from "@/features/cart/cart-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <body>
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
+        <CartProvider>
+          <SiteHeader />
+          <main>{children}</main>
+          <SiteFooter />
+        </CartProvider>
       </body>
     </html>
   );

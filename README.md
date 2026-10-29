@@ -1,6 +1,6 @@
 # LucyMary Headless Storefront
 
-Base da nova vitrine LucyMary, com **Next.js App Router, TypeScript e Tailwind CSS**. O WordPress/WooCommerce continua sendo a fonte oficial de produtos, preços, estoque e, nas próximas etapas, carrinho, clientes, pedidos, cupons e pagamentos. Esta entrega faz somente leituras públicas da Store API. Nenhum endpoint de escrita, pedido ou pagamento foi implementado.
+Base da nova vitrine LucyMary, com **Next.js App Router, TypeScript e Tailwind CSS**. O WordPress/WooCommerce é a fonte oficial de produtos, preços, estoque, carrinho e cupons; clientes, pedidos e pagamentos continuam no plano das próximas etapas. O catálogo usa leituras públicas da Store API e o carrinho usa os endpoints de sessão da mesma API. Nenhum checkout, pedido ou pagamento foi implementado.
 
 ## Estrutura
 
@@ -9,11 +9,12 @@ src/
   app/                 Páginas, layout e estados do App Router
   components/          Componentes reutilizáveis da vitrine
   features/
-    cart/               Contrato inicial para sessão de carrinho
+    cart/               Estado, tipos e formatação do carrinho por visitante
     auth/               Contrato inicial para sessão de cliente
     checkout/           Estados planejados do checkout
   lib/brand/           Ordem e imagens da navegação visual
   lib/woocommerce/     Cliente público, tipos e formatação de preços
+docs/catalog-audit.md  Auditoria de leitura do catálogo público
 public/brand/          Logo, banners e imagens de categorias da LucyMary
 ```
 
@@ -28,6 +29,14 @@ public/brand/          Logo, banners e imagens de categorias da LucyMary
 Somente produtos **publicados e visíveis** pela Store API aparecem no frontend. A home é uma seleção recente; a rota `/produtos` usa a paginação da API para alcançar o catálogo inteiro. O nome, as imagens, as descrições, a referência, o preço, a disponibilidade e as características mostradas são lidos da loja; nenhuma ficha comercial é simulada. Descrições HTML são convertidas em texto para evitar renderizar código vindo da API. Produtos e variações podem compartilhar um slug; o cliente seleciona o produto pai para montar a página e consulta a variação por ID quando escolhida. Campos administrativos e metadados de plugins que não são expostos pela Store API exigem uma integração específica antes de aparecerem no frontend.
 
 A navegação mostra as categorias cadastradas no WooCommerce, inclusive as vazias (`hide_empty=false`). A página de uma categoria vazia exibe o estado sem produtos. A ordem e as imagens da vitrine acompanham a identidade visual do site atual; os nomes e links das categorias vêm da Store API.
+
+## Carrinho
+
+- A página `/produto/[slug]` permite adicionar produtos simples ou uma variação selecionada. O WooCommerce valida a disponibilidade e o preço atuais.
+- A sacola do header e a página `/carrinho` mostram os itens reais, permitem alterar quantidades, remover itens, aplicar/remover cupons e consultar frete após informar CEP, cidade e estado.
+- O Next.js é um intermediário para a Store API em `/api/cart`: usa o `Cart-Token` exclusivo do visitante em cookie `HttpOnly` e `SameSite=Lax`, com `Secure` em HTTPS. O navegador não recebe esse token no JSON nem envia um token arbitrário em cabeçalho. As respostas e chamadas do carrinho usam `no-store`.
+- O checkout permanece desativado. Não foram criados pedidos na loja. O carrinho pode ser testado no Preview sem concluir compras.
+- A auditoria pública de 29/10/2026 está em [docs/catalog-audit.md](docs/catalog-audit.md). Ela não substitui a comparação com rascunhos e produtos privados no painel WordPress.
 
 ## Identidade visual
 
@@ -76,12 +85,14 @@ npm run typecheck
 npm run build
 ```
 
+Com o build iniciado em `npm run start -- -H 127.0.0.1 -p 3001` e acesso à Store API configurado, `node scripts/cart-smoke.mjs` exercita duas sessões isoladas, inclusão e remoção de produto simples e variação, atualização de quantidade e endereço de entrega. O teste usa apenas um carrinho temporário e não acessa o checkout. Os IDs são produtos públicos observados na auditoria; se forem removidos da loja, atualize o script antes de executá-lo.
+
 ## Arquitetura e cache
 
 - A leitura de produtos, categorias e variações usa a Store API pública no servidor, sem chave de API. Os recursos públicos têm revalidação de 60 segundos. Por isso, alterações de preço ou estoque podem levar até aproximadamente um minuto para aparecer na vitrine. O checkout futuro deverá sempre pedir os totais e a disponibilidade atuais ao WooCommerce.
 - O cliente está isolado em `src/lib/woocommerce/store-api.ts`. A REST API autenticada fica reservada para casos que realmente a exijam, em código de servidor e com credenciais de menor privilégio. Não há credenciais REST neste projeto nesta etapa.
-- Nenhuma resposta de carrinho, autenticação, cliente, pedido ou checkout é solicitada ou armazenada agora. Quando implementados, esses recursos deverão usar `cache: "no-store"` e sessão exclusiva por visitante, sem cache compartilhado.
-- O carrinho headless deverá usar o `Cart-Token` retornado pela Store API, ou `Nonce` quando o fluxo exigir. O token deve ficar restrito à sessão do visitante, com cuidado especial no proxy Next.js. Não se deve aceitar um Cart Token fornecido por outro usuário.
+- O carrinho usa `cache: "no-store"` e sessão exclusiva por visitante. Autenticação, cliente, pedido e checkout ainda não são chamados pelo frontend e exigirão a mesma separação de cache.
+- O `Cart-Token` é obtido pelo servidor Next.js da Store API e enviado ao WooCommerce somente nas chamadas da sessão. O proxy ignora qualquer cabeçalho `Cart-Token` fornecido pelo navegador.
 - O frontend não mantém banco de dados comercial paralelo.
 
 ## Checkout e pagamentos: próxima etapa

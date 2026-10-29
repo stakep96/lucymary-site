@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { convert } from "html-to-text";
+import { AddToCart } from "@/components/add-to-cart";
 import { formatStorePrice } from "@/lib/woocommerce/format";
 import { getProductBySlug, getVariationById } from "@/lib/woocommerce/store-api";
 import type { StoreVariationSummary } from "@/lib/woocommerce/types";
@@ -59,6 +60,14 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const shortDescription = toText(product.short_description);
   const category = product.categories?.[0];
   const isVariable = product.type === "variable";
+  const selectedVariation = product.variations?.find((item) => item.id === variation?.id);
+  const variationAttributes = variation ? (product.attributes || [])
+    .filter((attribute) => attribute.has_variations)
+    .map((attribute) => ({
+      name: attribute.name,
+      fixedValue: selectedVariation?.attributes.find((item) => item.name === attribute.name)?.value || null,
+      options: attribute.terms.map((term) => term.name),
+    })) : [];
   const characteristics = [
     product.brands?.length ? { label: "Marca", value: product.brands.map((brand) => brand.name).join(", ") } : null,
     ...(product.attributes || []).map((attribute) => ({
@@ -116,8 +125,16 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
               {variationError && <p className="detail-note">Não foi possível consultar esta opção agora.</p>}
             </div>
           )}
+          <AddToCart
+            key={current.id}
+            productId={current.id}
+            available={current.is_in_stock && current.is_purchasable !== false}
+            requiresVariation={isVariable && !variation}
+            soldIndividually={Boolean(current.sold_individually)}
+            variationAttributes={variationAttributes}
+          />
           {product.sku && <p className="detail-sku">Referência: {product.sku}</p>}
-          <p className="detail-note">Compra pelo novo site em preparação. Preço e disponibilidade serão confirmados pelo WooCommerce no checkout.</p>
+          <p className="detail-note">O WooCommerce confirma preço e disponibilidade ao adicionar à sacola. A finalização da compra está em preparação.</p>
         </div>
       </div>
       {description && <section className="detail-description"><span className="eyebrow">Detalhes da peça</span><h2>Descrição</h2><p>{description}</p></section>}
