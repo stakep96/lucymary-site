@@ -2,21 +2,47 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { categoryImage } from "@/lib/brand/categories";
 import type { StoreCategory } from "@/lib/woocommerce/types";
 
 export function CategoryCarousel({ categories }: { categories: StoreCategory[] }) {
   const track = useRef<HTMLDivElement>(null);
+  const lastInteraction = useRef(0);
+
+  useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 640px)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const timer = window.setInterval(() => {
+      const element = track.current;
+      if (!element || !mobile.matches || reducedMotion.matches || document.hidden || Date.now() - lastInteraction.current < 6000) return;
+
+      const firstTile = element.querySelector<HTMLElement>(".category-tile");
+      if (!firstTile) return;
+      const gap = Number.parseFloat(window.getComputedStyle(element).columnGap) || 0;
+      const step = firstTile.offsetWidth + gap;
+      const end = element.scrollWidth - element.clientWidth;
+      if (end < 2) return;
+      element.scrollTo({ left: element.scrollLeft + step > end + 2 ? 0 : element.scrollLeft + step, behavior: "smooth" });
+    }, 4200);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   function scroll(direction: number) {
-    track.current?.scrollBy({ left: direction * 520, behavior: "smooth" });
+    const element = track.current;
+    const firstTile = element?.querySelector<HTMLElement>(".category-tile");
+    if (!element || !firstTile) return;
+    const gap = Number.parseFloat(window.getComputedStyle(element).columnGap) || 0;
+    lastInteraction.current = Date.now();
+    element.scrollBy({ left: direction * (firstTile.offsetWidth + gap), behavior: "smooth" });
   }
 
   return (
     <div className="category-carousel">
-      <button className="category-arrow" type="button" aria-label="Categorias anteriores" onClick={() => scroll(-1)}>‹</button>
-      <div className="category-track" ref={track}>
+      <button className="category-arrow category-arrow-prev" type="button" aria-label="Categorias anteriores" onClick={() => scroll(-1)}><ChevronLeft size={18} aria-hidden="true" /></button>
+      <div className="category-track" ref={track} onTouchStart={() => { lastInteraction.current = Date.now(); }} onTouchEnd={() => { lastInteraction.current = Date.now(); }}>
         {categories.map((category) => {
           const image = categoryImage(category);
           return (
@@ -29,7 +55,7 @@ export function CategoryCarousel({ categories }: { categories: StoreCategory[] }
           );
         })}
       </div>
-      <button className="category-arrow" type="button" aria-label="Próximas categorias" onClick={() => scroll(1)}>›</button>
+      <button className="category-arrow category-arrow-next" type="button" aria-label="Próximas categorias" onClick={() => scroll(1)}><ChevronRight size={18} aria-hidden="true" /></button>
     </div>
   );
 }

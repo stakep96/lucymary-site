@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const slides = [
@@ -26,19 +26,52 @@ const slides = [
 
 export function HeroCarousel() {
   const [active, setActive] = useState(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const suppressClick = useRef(false);
+  const lastInteraction = useRef(0);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setActive((current) => (current + 1) % slides.length), 7000);
+    const timer = window.setInterval(() => {
+      if (!document.hidden && Date.now() - lastInteraction.current >= 5000) {
+        setActive((current) => (current + 1) % slides.length);
+      }
+    }, 7000);
     return () => window.clearInterval(timer);
   }, []);
 
   function change(step: number) {
+    lastInteraction.current = Date.now();
     setActive((current) => (current + step + slides.length) % slides.length);
   }
 
   return (
     <section className="brand-hero" aria-label="Destaques LucyMary">
-      <div className="hero-slides">
+      <div
+        className="hero-slides"
+        onTouchStart={(event) => {
+          const touch = event.touches[0];
+          touchStart.current = { x: touch.clientX, y: touch.clientY };
+        }}
+        onTouchEnd={(event) => {
+          const start = touchStart.current;
+          touchStart.current = null;
+          if (!start) return;
+          const touch = event.changedTouches[0];
+          const deltaX = touch.clientX - start.x;
+          const deltaY = touch.clientY - start.y;
+          if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+          suppressClick.current = true;
+          change(deltaX < 0 ? 1 : -1);
+          window.setTimeout(() => { suppressClick.current = false; }, 400);
+        }}
+        onTouchCancel={() => { touchStart.current = null; }}
+        onClickCapture={(event) => {
+          if (!suppressClick.current) return;
+          event.preventDefault();
+          event.stopPropagation();
+          suppressClick.current = false;
+        }}
+      >
         {slides.map((slide, index) => (
           <Link className={`hero-slide${active === index ? " active" : ""}`} href={slide.href} key={slide.desktop} aria-hidden={active !== index} tabIndex={active === index ? 0 : -1}>
             <picture>
@@ -52,7 +85,7 @@ export function HeroCarousel() {
       </div>
       <div className="hero-dots" aria-label="Escolher banner">
         {slides.map((slide, index) => (
-          <button className={active === index ? "active" : ""} type="button" key={slide.desktop} aria-label={`Mostrar banner ${index + 1}`} aria-current={active === index ? "true" : undefined} onClick={() => setActive(index)} />
+          <button className={active === index ? "active" : ""} type="button" key={slide.desktop} aria-label={`Mostrar banner ${index + 1}`} aria-current={active === index ? "true" : undefined} onClick={() => { lastInteraction.current = Date.now(); setActive(index); }} />
         ))}
       </div>
     </section>
