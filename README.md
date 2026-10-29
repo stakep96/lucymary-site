@@ -37,6 +37,7 @@ A navegação mostra as categorias cadastradas no WooCommerce, inclusive as vazi
 - O Next.js é um intermediário para a Store API em `/api/cart`: usa o `Cart-Token` exclusivo do visitante em cookie `HttpOnly` e `SameSite=Lax`, com `Secure` em HTTPS. O navegador não recebe esse token no JSON nem envia um token arbitrário em cabeçalho. As respostas e chamadas do carrinho usam `no-store`.
 - O checkout permanece desativado. Não foram criados pedidos na loja. O carrinho pode ser testado no Preview sem concluir compras.
 - A auditoria pública de 29/10/2026 está em [docs/catalog-audit.md](docs/catalog-audit.md). Ela não substitui a comparação com rascunhos e produtos privados no painel WordPress.
+- O acompanhamento do checkout real e das validações pendentes está em [docs/checkout-readiness.md](docs/checkout-readiness.md).
 
 ## Identidade visual
 
@@ -86,6 +87,7 @@ npm run build
 ```
 
 Com o build iniciado em `npm run start -- -H 127.0.0.1 -p 3001` e acesso à Store API configurado, `node scripts/cart-smoke.mjs` exercita duas sessões isoladas, inclusão e remoção de produto simples e variação, atualização de quantidade e endereço de entrega. O teste usa apenas um carrinho temporário e não acessa o checkout. Os IDs são produtos públicos observados na auditoria; se forem removidos da loja, atualize o script antes de executá-lo.
+O teste também informa quantas modalidades de frete a loja retorna para dois CEPs e seleciona uma modalidade disponível. Para testar um cupom válido, configure `CART_SMOKE_COUPON` somente no ambiente da execução; o script aplica e remove o cupom no mesmo carrinho temporário.
 
 ## Arquitetura e cache
 
