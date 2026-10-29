@@ -283,7 +283,7 @@ body:has(.header-search-toggle-input:checked) { overflow: hidden; }
 .search-modal-footer { flex: 0 0 auto; display: flex; justify-content: center; padding: 12px 20px 18px; border-top: 1px solid #f0e8ec; background: #fff; }
 .search-modal-footer a { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 20px; border-radius: 4px; background: var(--wine); color: #fff; font-size: 12px; font-weight: 600; text-transform: uppercase; }
 .search-modal-footer a:hover { background: #57042e; }
-.category-nav { min-height: 43px; display: flex; align-items: start; justify-content: center; gap: clamp(14px, 2.2vw, 31px); }
+.category-nav { min-height: 57px; display: flex; align-items: start; justify-content: center; gap: clamp(14px, 2.2vw, 31px); padding-top: 14px; }
 .category-nav a { color: #656065; font-size: 13px; font-weight: 400; line-height: 1.4; text-transform: uppercase; white-space: nowrap; }
 .category-nav a:hover, .header-institutional a:hover, .footer-column a:hover { color: var(--magenta); }
 .mobile-menu, .mobile-header-actions { display: none; }
