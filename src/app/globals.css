@@ -312,6 +312,7 @@ body:has(.header-search-toggle-input:checked) { overflow: hidden; }
 .category-name { display: block; margin-top: 9px; color: #59545a; font-family: Poppins, Arial, sans-serif; font-size: 12px; font-weight: 400; }
 .category-arrow { align-self: center; display: grid; place-items: center; width: 30px; height: 30px; margin-top: -13px; padding: 0; border: 0; border-radius: 50%; background: var(--magenta); color: white; cursor: pointer; }
 .category-arrow:hover { background: #65002d; }
+.category-indicators { display: none; }
 .category-placeholder { min-height: 170px; display: grid; place-items: center; color: var(--wine); font-family: Poppins, sans-serif; }
 
 .products-section { padding: 24px 0 100px; background: #fff; }
@@ -430,6 +431,9 @@ body:has(.header-search-toggle-input:checked) { overflow: hidden; }
   .category-tile { flex-basis: calc((100% - 14px) / 2); }
   .category-name { margin-top: 7px; font-size: 11px; }
   .category-arrow { display: none; }
+  .category-indicators { display: flex; align-items: center; justify-content: center; gap: 7px; padding-top: 42px; }
+  .category-indicators span { width: 6px; height: 6px; border-radius: 50%; background: #c9c9c9; }
+  .category-indicators span.active { background: var(--wine); }
   .products-section { padding-top: 12px; padding-bottom: 70px; }
   .brand-statement { margin-bottom: 25px; font-size: 18px; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 11px; }

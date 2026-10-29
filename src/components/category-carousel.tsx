@@ -3,13 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { categoryImage } from "@/lib/brand/categories";
 import type { StoreCategory } from "@/lib/woocommerce/types";
 
 export function CategoryCarousel({ categories }: { categories: StoreCategory[] }) {
   const track = useRef<HTMLDivElement>(null);
   const lastInteraction = useRef(0);
+  const [activePage, setActivePage] = useState(0);
+  const mobilePageCount = Math.max(0, categories.length - 1);
 
   useEffect(() => {
     const mobile = window.matchMedia("(max-width: 640px)");
@@ -39,10 +41,21 @@ export function CategoryCarousel({ categories }: { categories: StoreCategory[] }
     element.scrollBy({ left: direction * (firstTile.offsetWidth + gap), behavior: "smooth" });
   }
 
+  function updateActivePage() {
+    const element = track.current;
+    const firstTile = element?.querySelector<HTMLElement>(".category-tile");
+    if (!element || !firstTile) return;
+    const gap = Number.parseFloat(window.getComputedStyle(element).columnGap) || 0;
+    const step = firstTile.offsetWidth + gap;
+    if (step > 0 && mobilePageCount > 0) {
+      setActivePage(Math.min(mobilePageCount - 1, Math.max(0, Math.round(element.scrollLeft / step))));
+    }
+  }
+
   return (
     <div className="category-carousel">
       <button className="category-arrow category-arrow-prev" type="button" aria-label="Categorias anteriores" onClick={() => scroll(-1)}><ChevronLeft size={18} aria-hidden="true" /></button>
-      <div className="category-track" ref={track} onTouchStart={() => { lastInteraction.current = Date.now(); }} onTouchEnd={() => { lastInteraction.current = Date.now(); }}>
+      <div className="category-track" ref={track} onScroll={updateActivePage} onTouchStart={() => { lastInteraction.current = Date.now(); }} onTouchEnd={() => { lastInteraction.current = Date.now(); }}>
         {categories.map((category) => {
           const image = categoryImage(category);
           return (
@@ -56,6 +69,13 @@ export function CategoryCarousel({ categories }: { categories: StoreCategory[] }
         })}
       </div>
       <button className="category-arrow category-arrow-next" type="button" aria-label="Próximas categorias" onClick={() => scroll(1)}><ChevronRight size={18} aria-hidden="true" /></button>
+      {mobilePageCount > 1 && (
+        <div className="category-indicators" aria-hidden="true">
+          {Array.from({ length: mobilePageCount }, (_, index) => (
+            <span className={index === activePage ? "active" : ""} key={index} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
