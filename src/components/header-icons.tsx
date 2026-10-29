@@ -1,12 +1,12 @@
 import {
   ChevronDown,
   ClipboardList,
+  Handbag,
   MapPin,
   Menu,
   MessageCircle,
   Phone,
   Search,
-  ShoppingBag,
   UserRound,
   X,
 } from "lucide-react";
@@ -32,7 +32,7 @@ export function UserIcon({ size = 20 }: IconProps) {
 }
 
 export function BagIcon({ size = 20 }: IconProps) {
-  return <ShoppingBag size={size} strokeWidth={strokeWidth} aria-hidden="true" />;
+  return <Handbag size={size} strokeWidth={strokeWidth} aria-hidden="true" />;
 }
 
 export function MenuIcon({ size = 20 }: IconProps) {
