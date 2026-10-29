@@ -1,0 +1,153 @@
+import "server-only";
+
+import type { StoreCategory, StoreProduct } from "./types";
+
+const STORE_API_PATH = "/wp-json/wc/store/v1";
+const PUBLIC_REVALIDATE_SECONDS = 60;
+
+export class StoreApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StoreApiError";
+  }
+}
+
+export function isStoreConfigured(): boolean {
+  return Boolean(process.env.WOOCOMMERCE_STORE_URL?.trim());
+}
+
+function getStoreBaseUrl(): URL {
+  const configured = process.env.WOOCOMMERCE_STORE_URL?.trim();
+  if (!configured) throw new StoreApiError("A URL da loja não foi configurada.");
+
+  let url: URL;
+  try {
+    url = new URL(configured);
+  } catch {
+    throw new StoreApiError("A URL da loja é inválida.");
+  }
+
+  if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) {
+    throw new StoreApiError("A URL da loja deve usar HTTP(S) e não conter credenciais.");
+  }
+
+  return url;
+}
+
+export function buildStoreApiUrl(path: string, params?: URLSearchParams): URL {
+  const base = getStoreBaseUrl();
+  const url = new URL(`${base.pathname.replace(/\/$/, "")}${STORE_API_PATH}${path}`, base.origin);
+  if (params) url.search = params.toString();
+  return url;
+}
+
+async function getPublicResponse(path: string, params?: URLSearchParams): Promise<Response> {
+  const url = buildStoreApiUrl(path, params);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: PUBLIC_REVALIDATE_SECONDS },
+    });
+  } catch {
+    throw new StoreApiError("Não foi possível conectar ao catálogo.");
+  }
+
+  if (!response.ok) {
+    throw new StoreApiError(`O catálogo retornou HTTP ${response.status}.`);
+  }
+
+  return response;
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    throw new StoreApiError("O catálogo retornou dados inválidos.");
+  }
+}
+
+export interface ProductQuery {
+  page?: number;
+  perPage?: number;
+  category?: string;
+  search?: string;
+  slug?: string;
+}
+
+export interface ProductCollection {
+  items: StoreProduct[];
+  total: number;
+  totalPages: number;
+}
+
+export async function listProducts(query: ProductQuery = {}): Promise<ProductCollection> {
+  const page = Math.max(1, Math.floor(query.page || 1));
+  const perPage = Math.min(100, Math.max(1, Math.floor(query.perPage || 12)));
+  const params = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+    orderby: "date",
+    order: "desc",
+  });
+  if (query.category) params.set("category", query.category);
+  if (query.search) params.set("search", query.search);
+  if (query.slug) params.set("slug", query.slug);
+
+  const response = await getPublicResponse("/products", params);
+  const data = await readJson(response);
+  if (!Array.isArray(data)) throw new StoreApiError("O catálogo retornou uma lista inválida.");
+
+  const totalHeader = response.headers.get("X-WP-Total");
+  const totalPagesHeader = response.headers.get("X-WP-TotalPages");
+  const total = totalHeader === null ? NaN : Number(totalHeader);
+  const totalPages = totalPagesHeader === null ? NaN : Number(totalPagesHeader);
+  return {
+    items: data as StoreProduct[],
+    total: Number.isFinite(total) ? total : data.length,
+    totalPages: Number.isFinite(totalPages) ? totalPages : Math.ceil(data.length / perPage),
+  };
+}
+
+export async function getProducts(limit = 8): Promise<StoreProduct[]> {
+  return (await listProducts({ perPage: limit })).items;
+}
+
+export async function getProductBySlug(slug: string): Promise<StoreProduct | null> {
+  // O WooCommerce pode retornar a variação antes do produto pai quando ambos
+  // compartilham o mesmo slug. Percorra os resultados até encontrar o pai.
+  const firstPage = await listProducts({ slug, perPage: 100 });
+  const findParent = (items: StoreProduct[]) => items.find(
+    (product) => product.slug === slug && product.type !== "variation" && !product.parent,
+  );
+  const initialMatch = findParent(firstPage.items);
+  if (initialMatch) return initialMatch;
+
+  for (let page = 2; page <= firstPage.totalPages; page += 1) {
+    const result = await listProducts({ slug, page, perPage: 100 });
+    const match = findParent(result.items);
+    if (match) return match;
+  }
+  return null;
+}
+
+export async function getVariationById(id: number): Promise<StoreProduct | null> {
+  const response = await getPublicResponse(`/products/${id}`);
+  const data = await readJson(response);
+  if (!data || Array.isArray(data) || typeof data !== "object") {
+    throw new StoreApiError("O catálogo retornou uma variação inválida.");
+  }
+  return data as StoreProduct;
+}
+
+export async function getCategories(includeEmpty = false): Promise<StoreCategory[]> {
+  const response = await getPublicResponse(
+    "/products/categories",
+    new URLSearchParams({ per_page: "100", hide_empty: includeEmpty ? "false" : "true" }),
+  );
+  const data = await readJson(response);
+  if (!Array.isArray(data)) throw new StoreApiError("O catálogo retornou categorias inválidas.");
+  return data as StoreCategory[];
+}
