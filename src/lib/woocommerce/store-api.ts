@@ -4,6 +4,9 @@ import type { StoreCategory, StoreProduct } from "./types";
 
 const STORE_API_PATH = "/wp-json/wc/store/v1";
 const PUBLIC_REVALIDATE_SECONDS = 60;
+const CATEGORY_REVALIDATE_SECONDS = 15 * 60;
+const FACET_REVALIDATE_SECONDS = 60 * 60;
+const PRICE_RANGE_REVALIDATE_SECONDS = 5 * 60;
 
 export class StoreApiError extends Error {
   constructor(message: string) {
@@ -41,14 +44,14 @@ export function buildStoreApiUrl(path: string, params?: URLSearchParams): URL {
   return url;
 }
 
-async function getPublicResponse(path: string, params?: URLSearchParams): Promise<Response> {
+async function getPublicResponse(path: string, params?: URLSearchParams, revalidate = PUBLIC_REVALIDATE_SECONDS): Promise<Response> {
   const url = buildStoreApiUrl(path, params);
 
   let response: Response;
   try {
     response = await fetch(url, {
       headers: { Accept: "application/json" },
-      next: { revalidate: PUBLIC_REVALIDATE_SECONDS },
+      next: { revalidate },
     });
   } catch {
     throw new StoreApiError("Não foi possível conectar ao catálogo.");
@@ -103,7 +106,7 @@ export interface CatalogPriceRange {
 export async function getCatalogPriceRange(category?: string): Promise<CatalogPriceRange> {
   const params = new URLSearchParams({ calculate_price_range: "true" });
   if (category) params.set("category", category);
-  const data = await readJson(await getPublicResponse("/products/collection-data", params));
+  const data = await readJson(await getPublicResponse("/products/collection-data", params, PRICE_RANGE_REVALIDATE_SECONDS));
   const range = (data as { price_range?: { min_price?: string; max_price?: string; currency_minor_unit?: number } })?.price_range;
   const divisor = 10 ** Number(range?.currency_minor_unit);
   const min = Number(range?.min_price) / divisor;
@@ -115,13 +118,13 @@ export async function getCatalogPriceRange(category?: string): Promise<CatalogPr
 }
 
 export async function getProductAttributes(): Promise<StoreAttribute[]> {
-  const data = await readJson(await getPublicResponse("/products/attributes"));
+  const data = await readJson(await getPublicResponse("/products/attributes", undefined, FACET_REVALIDATE_SECONDS));
   if (!Array.isArray(data)) throw new StoreApiError("Os atributos do catálogo são inválidos.");
   return data as StoreAttribute[];
 }
 
 export async function getAttributeTerms(id: number): Promise<StoreAttributeTerm[]> {
-  const data = await readJson(await getPublicResponse(`/products/attributes/${id}/terms`));
+  const data = await readJson(await getPublicResponse(`/products/attributes/${id}/terms`, undefined, FACET_REVALIDATE_SECONDS));
   if (!Array.isArray(data)) throw new StoreApiError("Os termos do atributo são inválidos.");
   return data as StoreAttributeTerm[];
 }
@@ -208,6 +211,7 @@ export async function getCategories(includeEmpty = false): Promise<StoreCategory
   const response = await getPublicResponse(
     "/products/categories",
     new URLSearchParams({ per_page: "100", hide_empty: includeEmpty ? "false" : "true" }),
+    CATEGORY_REVALIDATE_SECONDS,
   );
   const data = await readJson(response);
   if (!Array.isArray(data)) throw new StoreApiError("O catálogo retornou categorias inválidas.");

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { CartItemRow } from "@/components/cart-item-row";
 import { BagIcon } from "@/components/header-icons";
 import { formatCartAmount } from "@/features/cart/format";
@@ -15,6 +15,10 @@ const states = [
 export function CartPage() {
   const { cart, status, busy, error, refresh, perform } = useCart();
   const [coupon, setCoupon] = useState("");
+
+  useEffect(() => {
+    if (status === "idle") void refresh();
+  }, [status, refresh]);
 
   async function applyCoupon(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,7 +47,7 @@ export function CartPage() {
       <nav className="breadcrumb" aria-label="Caminho da página"><Link href="/">Início</Link><span>/</span><span>Minha sacola</span></nav>
       <header className="cart-page-heading"><span className="eyebrow">Sua seleção</span><h1>Minha sacola</h1><p>Itens e valores calculados pelo WooCommerce.</p></header>
 
-      {status === "loading" && <div className="cart-page-state" role="status">Carregando sua sacola...</div>}
+      {(status === "idle" || status === "loading") && <div className="cart-page-state" role="status">Carregando sua sacola...</div>}
       {status === "error" && <div className="cart-page-state" role="alert"><p>{error || "Não foi possível carregar a sacola."}</p><button type="button" onClick={() => { void refresh(); }}>Tentar novamente</button></div>}
       {status === "ready" && cart && cart.items.length === 0 && (
         <div className="cart-page-state"><BagIcon size={40} /><h2>Sua sacola está vazia</h2><p>Explore as coleções e escolha suas peças favoritas.</p><Link href="/produtos">Explorar produtos</Link></div>

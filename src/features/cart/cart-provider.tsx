@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState } from "react";
 import type { CartAction, CartView } from "./types";
 
 interface CartContextValue {
   cart: CartView | null;
-  status: "loading" | "ready" | "error";
+  status: "idle" | "loading" | "ready" | "error";
   busy: boolean;
   error: string | null;
   drawerRequest: number;
@@ -30,13 +30,16 @@ async function readCart(signal?: AbortSignal): Promise<CartView> {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartView | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [drawerRequest, setDrawerRequest] = useState(0);
   const busyRef = useRef(false);
+  const refreshingRef = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
     setStatus("loading");
     setError(null);
     try {
@@ -46,35 +49,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch (cause) {
       setStatus("error");
       setError(errorMessage(cause));
+    } finally {
+      refreshingRef.current = false;
     }
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    async function initialize() {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const startedAt = Date.now();
-        try {
-          const data = await readCart(controller.signal);
-          if (controller.signal.aborted) return;
-          setCart(data);
-          setStatus("ready");
-          setError(null);
-          return;
-        } catch (cause) {
-          if (controller.signal.aborted) return;
-          if (attempt === 0 && Date.now() - startedAt < 10_000) {
-            await new Promise((resolve) => setTimeout(resolve, 700));
-            if (controller.signal.aborted) return;
-            continue;
-          }
-          setStatus("error");
-          setError(errorMessage(cause));
-        }
-      }
-    }
-    void initialize();
-    return () => controller.abort();
   }, []);
 
   const perform = useCallback(async (action: CartAction): Promise<CartView> => {
@@ -112,7 +89,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartContext.Provider value={{
       cart, status, busy, error, drawerRequest, refresh, perform,
-      openDrawer: () => setDrawerRequest((request) => request + 1),
+      openDrawer: () => {
+        if (!cart && status === "idle") void refresh();
+        setDrawerRequest((request) => request + 1);
+      },
       clearError: () => setError(null),
     }}>
       {children}

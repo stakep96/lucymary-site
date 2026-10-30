@@ -65,10 +65,10 @@ export function CartDrawer({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <div className="cart-drawer">
-      <input ref={toggleRef} className="cart-drawer-toggle" id={toggleId} type="checkbox" aria-label={`Abrir sacola, ${cart?.itemsCount || 0} itens`} aria-controls={panelId} onChange={(event) => { if (event.target.checked) closeRef.current?.focus(); }} />
+      <input ref={toggleRef} className="cart-drawer-toggle" id={toggleId} type="checkbox" aria-label={`Abrir sacola${cart ? `, ${cart.itemsCount} itens` : ""}`} aria-controls={panelId} onChange={(event) => { if (event.target.checked) { if (status === "idle") void refresh(); closeRef.current?.focus(); } }} />
       <label className="cart-drawer-trigger bag-action" htmlFor={toggleId} aria-hidden="true">
         <BagIcon />
-        <span className="bag-count" aria-hidden="true">{cart?.itemsCount || 0}</span>
+        {cart && <span className="bag-count" aria-hidden="true">{cart.itemsCount}</span>}
       </label>
 
       <div className="cart-drawer-overlay" id={panelId} role="dialog" aria-modal="true" aria-labelledby={titleId}>
@@ -86,7 +86,7 @@ export function CartDrawer({ mobile = false }: { mobile?: boolean }) {
           </div>
 
           <div className={`cart-drawer-body${cart?.items.length ? " has-items" : ""}`}>
-            {status === "loading" && <p className="cart-drawer-state" role="status">Carregando sua sacola...</p>}
+            {(status === "idle" || status === "loading") && <p className="cart-drawer-state" role="status">Carregando sua sacola...</p>}
             {status === "error" && <div className="cart-drawer-state" role="alert"><p>{error || "Não foi possível carregar a sacola."}</p><button type="button" onClick={() => { void refresh(); }}>Tentar novamente</button></div>}
             {status === "ready" && cart?.items.length === 0 && (
               <div className="cart-drawer-empty">
