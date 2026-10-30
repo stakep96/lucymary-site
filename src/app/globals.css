@@ -445,7 +445,7 @@ body:has(.header-search-toggle-input:checked) { overflow: hidden; }
 .product-option-values { display: flex; flex-wrap: wrap; gap: 8px; }
 .product-option-values button { min-width: 48px; min-height: 38px; border: 1px solid #e2d4db; border-radius: 5px; padding: 6px 13px; background: #fff; color: #453942; cursor: pointer; font-family: Poppins, sans-serif; font-size: 12px; transition: border-color .15s, background .15s, color .15s; }
 .product-option-values.compact button { min-width: 42px; padding-inline: 9px; }
-.product-option-values button:hover:not(:disabled), .product-option-values button:focus-visible { border-color: var(--wine); color: var(--wine); }
+.product-option-values button:hover:not(:disabled):not(.selected), .product-option-values button:focus-visible:not(.selected) { border-color: var(--wine); color: var(--wine); }
 .product-option-values button.selected { border-color: var(--wine); background: var(--wine); color: #fff; }
 .product-option-values button:disabled { background: #f1ecef; color: #aaa0a5; cursor: not-allowed; }
 .ring-size-selector { height: 52px; display: grid; grid-template-columns: 43px minmax(0, 1fr) 43px; border: 1px solid #ded7da; border-radius: 6px; background: #fff; }

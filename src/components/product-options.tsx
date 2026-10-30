@@ -156,7 +156,6 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
   }
 
   function select(name: string, value: string, browseRing = false) {
-    if (normal(choicesRef.current[name] || "") === normal(value) && !selectionTimer.current) return;
     const next = { ...choicesRef.current, [name]: value };
     choicesRef.current = next;
     setChoices(next);
@@ -233,6 +232,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
           ))}</div>}
           {complete && attributes.length > 0 && !matched && <p className="product-option-unavailable" role="status">Essa combinação não está disponível.</p>}
           {!complete && attributes.length > 0 && <p className="product-option-hint">Selecione todas as opções para consultar o preço e a disponibilidade.</p>}
+          {complete && selectionUpdating && <p className="product-option-hint" role="status">Atualizando preço e disponibilidade da opção selecionada...</p>}
         </section>
       )}
 
