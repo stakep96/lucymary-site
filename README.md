@@ -23,7 +23,7 @@ public/brand/          Logo, banners e imagens de categorias da LucyMary
 - `/`: 12 produtos recentes e categorias publicadas.
 - `/produtos`: todos os produtos publicados e visíveis, em páginas de 12 itens.
 - `/categoria/[slug]`: produtos de uma categoria do WooCommerce.
-- `/produto/[slug]`: fotos, descrições, referência, preço, disponibilidade, marca, etiquetas, atributos e medidas públicos de um produto. Para produtos variáveis, a opção selecionada consulta o preço e o estoque da variação real.
+- `/produto/[slug]`: fotos, descrições, referência, preço, disponibilidade, marca, etiquetas, atributos e medidas públicos de um produto. Para produtos variáveis, a seleção de atributos consulta o preço e o estoque da variação real; a página permite adicionar a opção escolhida à sacola e consultar modalidades de frete por CEP.
 - `/buscar?q=termo`: busca na Store API, com paginação.
 
 Somente produtos **publicados e visíveis** pela Store API aparecem no frontend. A home é uma seleção recente; a rota `/produtos` usa a paginação da API para alcançar o catálogo inteiro. O nome, as imagens, as descrições, a referência, o preço, a disponibilidade e as características mostradas são lidos da loja; nenhuma ficha comercial é simulada. Descrições HTML são convertidas em texto para evitar renderizar código vindo da API. Produtos e variações podem compartilhar um slug; o cliente seleciona o produto pai para montar a página e consulta a variação por ID quando escolhida. Campos administrativos e metadados de plugins que não são expostos pela Store API exigem uma integração específica antes de aparecerem no frontend.
@@ -33,9 +33,11 @@ A navegação mostra as categorias cadastradas no WooCommerce, inclusive as vazi
 ## Carrinho
 
 - A página `/produto/[slug]` permite adicionar produtos simples ou uma variação selecionada. O WooCommerce valida a disponibilidade e o preço atuais.
+- A consulta de frete na ficha usa `/api/shipping-quote`: o servidor cria um carrinho temporário separado, adiciona a opção e a quantidade escolhidas, informa o CEP à Store API e mostra as modalidades retornadas pela loja. Ela não altera a sacola do visitante nem cria pedido. O valor é uma estimativa e será recalculado no carrinho.
 - A sacola do header e a página `/carrinho` mostram os itens reais, permitem alterar quantidades, remover itens, aplicar/remover cupons e consultar frete após informar CEP, cidade e estado.
 - O Next.js é um intermediário para a Store API em `/api/cart`: usa o `Cart-Token` exclusivo do visitante em cookie `HttpOnly` e `SameSite=Lax`, com `Secure` em HTTPS. O navegador não recebe esse token no JSON nem envia um token arbitrário em cabeçalho. As respostas e chamadas do carrinho usam `no-store`.
 - O checkout permanece desativado. Não foram criados pedidos na loja. O carrinho pode ser testado no Preview sem concluir compras.
+- O botão **Comprar agora** aparece na ficha, mas permanece desativado até validar a integração do checkout e do Mercado Pago Checkout Pro. Redirecionar para um pagamento sem preservar a sessão, o frete e a variação poderia gerar uma compra incorreta.
 - A auditoria pública de 29/10/2026 está em [docs/catalog-audit.md](docs/catalog-audit.md). Ela não substitui a comparação com rascunhos e produtos privados no painel WordPress.
 - O acompanhamento do checkout real e das validações pendentes está em [docs/checkout-readiness.md](docs/checkout-readiness.md).
 - A preparação do novo WordPress independente está em [docs/new-wordpress-backend.md](docs/new-wordpress-backend.md).

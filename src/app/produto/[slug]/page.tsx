@@ -3,27 +3,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { convert } from "html-to-text";
-import { AddToCart } from "@/components/add-to-cart";
+import { ProductOptions } from "@/components/product-options";
 import { formatStorePrice } from "@/lib/woocommerce/format";
 import { getProductBySlug, getVariationById } from "@/lib/woocommerce/store-api";
-import type { StoreVariationSummary } from "@/lib/woocommerce/types";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ variacao?: string | string[] }>;
+  searchParams: Promise<{ variacao?: string | string[]; escolhas?: string | string[] }>;
 }
 
 export const revalidate = 60;
 
 function toText(html: string | undefined): string {
   return html ? convert(html, { wordwrap: false }).trim() : "";
-}
-
-function variationLabel(variation: StoreVariationSummary, index: number): string {
-  const parts = variation.attributes
-    .filter((attribute) => attribute.value)
-    .map((attribute) => `${attribute.name}: ${attribute.value}`);
-  return parts.join(" · ") || `Opção ${index + 1}`;
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -40,8 +32,11 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const rawVariation = (await searchParams).variacao;
-  const variationId = Number(Array.isArray(rawVariation) ? rawVariation[0] : rawVariation);
+  const pageQuery = await searchParams;
+  const rawVariation = pageQuery.variacao;
+  const requestedVariationId = Number(Array.isArray(rawVariation) ? rawVariation[0] : rawVariation);
+  const variationId = Number.isInteger(requestedVariationId) && requestedVariationId > 0
+    ? requestedVariationId : product.type === "variable" && product.variations?.length === 1 ? product.variations[0].id : 0;
   const validVariation = product.variations?.some((item) => item.id === variationId);
   let variation = null;
   let variationError = false;
@@ -60,14 +55,23 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const shortDescription = toText(product.short_description);
   const category = product.categories?.[0];
   const isVariable = product.type === "variable";
+  const optionAttributes = (product.attributes || []).filter((attribute) => attribute.has_variations);
   const selectedVariation = product.variations?.find((item) => item.id === variation?.id);
-  const variationAttributes = variation ? (product.attributes || [])
-    .filter((attribute) => attribute.has_variations)
-    .map((attribute) => ({
-      name: attribute.name,
-      fixedValue: selectedVariation?.attributes.find((item) => item.name === attribute.name)?.value || null,
-      options: attribute.terms.map((term) => term.name),
-    })) : [];
+  let requestedChoices: Record<string, unknown> = {};
+  const rawChoices = Array.isArray(pageQuery.escolhas) ? pageQuery.escolhas[0] : pageQuery.escolhas;
+  if (rawChoices && rawChoices.length <= 1000) {
+    try {
+      const value = JSON.parse(rawChoices);
+      if (value && typeof value === "object" && !Array.isArray(value)) requestedChoices = value;
+    } catch { /* Escolhas inválidas são ignoradas. */ }
+  }
+  const initialChoices = Object.fromEntries(optionAttributes.map((attribute) => {
+    const requested = requestedChoices[attribute.name];
+    const fixed = selectedVariation?.attributes.find((item) => item.name.toLocaleLowerCase("pt-BR") === attribute.name.toLocaleLowerCase("pt-BR"))?.value;
+    const chosen = typeof requested === "string" ? requested : fixed || (attribute.terms.length === 1 ? attribute.terms[0].name : "");
+    const validTerm = attribute.terms.find((term) => term.name.toLocaleLowerCase("pt-BR") === chosen.toLocaleLowerCase("pt-BR"));
+    return [attribute.name, validTerm?.name || ""];
+  }));
   const characteristics = [
     product.brands?.length ? { label: "Marca", value: product.brands.map((brand) => brand.name).join(", ") } : null,
     ...(product.attributes || []).map((attribute) => ({
@@ -111,28 +115,20 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
             {current.on_sale && current.prices.regular_price !== current.prices.price && <del>{formatStorePrice(current.prices, current.prices.regular_price)}</del>}
           </p>
           <p className="detail-stock">{current.is_in_stock ? "Disponível na loja" : "Indisponível no momento"}</p>
-          {shortDescription && <p className="detail-short-description">{shortDescription}</p>}
-          {isVariable && (
-            <div className="variation-section">
-              <h2>Opções disponíveis</h2>
-              {product.variations?.length ? (
-                <div className="variation-list">
-                  {product.variations.map((option, index) => (
-                    <Link className={`variation-option${variation?.id === option.id ? " selected" : ""}`} href={`/produto/${encodeURIComponent(product.slug)}?variacao=${option.id}`} key={option.id} aria-current={variation?.id === option.id ? "true" : undefined}>{variationLabel(option, index)}</Link>
-                  ))}
-                </div>
-              ) : <p>Consulte as opções disponíveis na loja.</p>}
-              {variationError && <p className="detail-note">Não foi possível consultar esta opção agora.</p>}
-            </div>
-          )}
-          <AddToCart
-            key={current.id}
-            productId={current.id}
+          {variationError && <p className="detail-note">Não foi possível consultar esta opção agora.</p>}
+          <ProductOptions
+            key={product.id}
+            slug={product.slug}
+            productId={product.id}
+            currentId={current.id}
+            isVariable={isVariable}
             available={current.is_in_stock && current.is_purchasable !== false}
-            requiresVariation={isVariable && !variation}
             soldIndividually={Boolean(current.sold_individually)}
-            variationAttributes={variationAttributes}
+            attributes={optionAttributes}
+            variations={product.variations || []}
+            initialChoices={initialChoices}
           />
+          {shortDescription && <div className="detail-short-description"><h2>Sobre esta peça</h2><p>{shortDescription}</p></div>}
           {product.sku && <p className="detail-sku">Referência: {product.sku}</p>}
           <p className="detail-note">O WooCommerce confirma preço e disponibilidade ao adicionar à sacola. A finalização da compra está em preparação.</p>
         </div>
