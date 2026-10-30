@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { ChevronLeft, ChevronRight, LoaderCircle, Truck } from "lucide-react";
+import { useId, useRef, useState, useTransition, type CSSProperties, type FormEvent, type TouchEvent } from "react";
+import { ChevronLeft, ChevronRight, Ruler, Truck, X } from "lucide-react";
 import { AddToCart } from "@/components/add-to-cart";
 import { formatCartAmount } from "@/features/cart/format";
 import type { CartCurrency, CartShippingPackage } from "@/features/cart/types";
@@ -53,49 +53,71 @@ function RingSizeSelector({ attribute, choices, variations, updating, onSelect }
   updating: boolean;
   onSelect: (name: string, value: string) => void;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [scrollEdges, setScrollEdges] = useState({ start: true, end: false });
+  const selectedIndex = attribute.terms.findIndex((term) => normal(term.name) === normal(choices[attribute.name] || ""));
+  const [defaultFocusIndex, setDefaultFocusIndex] = useState(() => selectedIndex >= 0 ? selectedIndex : Math.min(3, attribute.terms.length - 1));
+  const focusIndex = selectedIndex >= 0 ? selectedIndex : defaultFocusIndex;
+  const touchStartX = useRef<number | null>(null);
+  const lastSwipeAt = useRef(0);
+  const guideRef = useRef<HTMLDialogElement>(null);
+  const guideTitleId = useId();
+  const count = attribute.terms.length;
+  const slots = Math.min(7, count);
+  const center = Math.floor(slots / 2);
+  const visibleIndices = Array.from({ length: slots }, (_, position) => (focusIndex + position - center + count) % count);
 
-  function updateScrollEdges() {
-    const track = trackRef.current;
-    if (!track) return;
-    const start = track.scrollLeft <= 2;
-    const end = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-    setScrollEdges((current) => current.start === start && current.end === end ? current : { start, end });
+  function isPossible(index: number) {
+    const term = attribute.terms[index];
+    return Boolean(term && variations.some((item) => accepts(item, { ...choices, [attribute.name]: term.name })));
   }
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const observer = new ResizeObserver(updateScrollEdges);
-    observer.observe(track);
-    updateScrollEdges();
-    return () => observer.disconnect();
-  }, [attribute.terms.length]);
+  function selectIndex(index: number) {
+    const term = attribute.terms[index];
+    if (!term || updating || !isPossible(index)) return;
+    setDefaultFocusIndex(index);
+    onSelect(attribute.name, term.name);
+  }
 
   function move(direction: -1 | 1) {
-    const track = trackRef.current;
-    if (!track) return;
-    track.scrollBy({ left: direction * Math.max(track.clientWidth * .72, 108), behavior: "smooth" });
+    if (!count || updating) return;
+    for (let step = 1; step <= count; step += 1) {
+      const index = (focusIndex + direction * step + count * 2) % count;
+      if (isPossible(index)) { selectIndex(index); return; }
+    }
+  }
+
+  function endTouch(event: TouchEvent<HTMLDivElement>) {
+    if (touchStartX.current === null) return;
+    const distance = event.changedTouches[0]?.clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(distance || 0) < 32) return;
+    lastSwipeAt.current = Date.now();
+    move(distance! > 0 ? -1 : 1);
   }
 
   return (
     <fieldset className="product-option-group ring-size-group">
       <legend>Tamanho do Aro {choices[attribute.name] && <span>{choices[attribute.name]}</span>}</legend>
-      <div className="ring-size-selector">
-        <button className="ring-size-arrow" type="button" aria-label="Ver tamanhos anteriores" disabled={scrollEdges.start} onClick={() => move(-1)}><ChevronLeft size={18} /></button>
-        <div className="ring-size-track" ref={trackRef} onScroll={updateScrollEdges}>
-          {attribute.terms.map((term) => {
-            const selected = normal(choices[attribute.name] || "") === normal(term.name);
-            const candidate = { ...choices, [attribute.name]: term.name };
-            const possible = variations.some((item) => accepts(item, candidate));
-            return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={!possible} onClick={() => onSelect(attribute.name, term.name)} key={term.id || term.name}>
-              {selected && updating ? <LoaderCircle size={15} className="button-spinner" aria-label="Consultando tamanho" /> : term.name}
-            </button>;
+      <div className="ring-size-selector" style={{ "--ring-slots": slots } as CSSProperties} onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={endTouch}>
+        <button className="ring-size-arrow" type="button" aria-label="Selecionar aro anterior" disabled={count < 2 || updating} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) move(-1); }}><ChevronLeft size={18} /></button>
+        <div className="ring-size-track">
+          {visibleIndices.map((index, position) => {
+            const term = attribute.terms[index];
+            const selected = selectedIndex === index;
+            const centered = position === center;
+            return <button type="button" className={`${centered ? "centered" : ""}${selected ? " selected" : ""}`} aria-pressed={selected} aria-label={`Aro ${term.name}`} disabled={updating || !isPossible(index)} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) selectIndex(index); }} key={term.id || term.name}>{term.name}</button>;
           })}
         </div>
-        <button className="ring-size-arrow" type="button" aria-label="Ver próximos tamanhos" disabled={scrollEdges.end} onClick={() => move(1)}><ChevronRight size={18} /></button>
+        <button className="ring-size-arrow" type="button" aria-label="Selecionar próximo aro" disabled={count < 2 || updating} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) move(1); }}><ChevronRight size={18} /></button>
       </div>
+      <button className="ring-size-guide-trigger" type="button" onClick={() => guideRef.current?.showModal()}><Ruler size={16} aria-hidden="true" />Tabela de medidas</button>
+      <dialog className="ring-size-dialog" ref={guideRef} aria-labelledby={guideTitleId} onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
+        <div className="ring-size-dialog-content">
+          <button className="ring-size-dialog-close" type="button" aria-label="Fechar tabela de medidas" onClick={() => guideRef.current?.close()}><X size={20} /></button>
+          <Ruler size={22} className="ring-size-dialog-icon" aria-hidden="true" />
+          <h2 id={guideTitleId}>Tabela de medidas</h2>
+          <p>A tabela oficial de aros da LucyMary será adicionada aqui em breve.</p>
+        </div>
+      </dialog>
     </fieldset>
   );
 }
@@ -180,7 +202,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
                   const selected = normal(choices[attribute.name] || "") === normal(term.name);
                   const candidate = { ...choices, [attribute.name]: term.name };
                   const possible = variations.some((item) => accepts(item, candidate));
-                  return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={!possible} onClick={() => select(attribute.name, term.name)} key={term.id || term.name}>{selected && selectionUpdating ? <LoaderCircle size={15} className="button-spinner" aria-label="Consultando opção" /> : term.name}</button>;
+                  return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={selectionUpdating || !possible} onClick={() => select(attribute.name, term.name)} key={term.id || term.name}>{term.name}</button>;
                 })}
               </div>
             </fieldset>
@@ -201,7 +223,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
         <form onSubmit={(event) => { void calculateShipping(event); }}>
           <label className="sr-only" htmlFor="product-postcode">CEP de entrega</label>
           <input id="product-postcode" inputMode="numeric" autoComplete="postal-code" placeholder="Digite seu CEP" value={postcode} onChange={(event) => { setPostcode(event.target.value); setQuote(null); }} maxLength={9} />
-          <button type="submit" disabled={quoteLoading || selectionUpdating || !selectionReady || !available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99}>{quoteLoading && <LoaderCircle size={16} className="button-spinner" aria-hidden="true" />}{quoteLoading ? "Calculando frete..." : "Calcular"}</button>
+          <button type="submit" disabled={quoteLoading || selectionUpdating || !selectionReady || !available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99}>{quoteLoading ? "Calculando frete..." : "Calcular"}</button>
         </form>
         {quoteError && <p className="product-shipping-error" role="alert">{quoteError}</p>}
         {quote && <div className="product-shipping-results" role="status">

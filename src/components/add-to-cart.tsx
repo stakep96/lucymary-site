@@ -49,7 +49,7 @@ export function AddToCart({ productId, available, selectionReady, selectionUpdat
       )}
       <div className="purchase-buttons">
         <button className="add-to-cart-button" type="submit" disabled={disabled}>{buttonLoading ? <LoaderCircle size={19} className="button-spinner" aria-hidden="true" /> : <BagIcon size={19} />}{buttonText}</button>
-        <button className="buy-now-button" type="button" disabled aria-describedby="checkout-pending-note">Comprar agora</button>
+        <button className="buy-now-button" type="button" disabled aria-describedby="checkout-pending-note">{selectionUpdating && <LoaderCircle size={17} className="button-spinner" aria-hidden="true" />}{selectionUpdating ? "Consultando opção..." : "Comprar agora"}</button>
       </div>
       <p className="checkout-pending-note" id="checkout-pending-note">Compra direta disponível após a validação do checkout com o WooCommerce.</p>
       {status === "error" && <p className="cart-inline-error" role="alert">A sacola está indisponível no momento. Tente recarregar a página.</p>}
