@@ -4,7 +4,7 @@ import { CatalogResults } from "@/components/catalog-results";
 import { CatalogState } from "@/components/catalog-state";
 import { parseCatalogQuery } from "@/lib/catalog/catalog-query";
 import { loadCatalogFacets } from "@/lib/catalog/load-facets";
-import { getCategories, listProducts } from "@/lib/woocommerce/store-api";
+import { getCatalogPriceRange, getCategories, listProducts } from "@/lib/woocommerce/store-api";
 
 export const metadata: Metadata = {
   title: "Todos os produtos | LucyMary",
@@ -26,9 +26,10 @@ export default async function ProductsPage({
   const simpleCollection = !filters.color && !filters.material
     ? listProducts(basicQuery).then((value) => ({ value, ok: true as const }), () => ({ ok: false as const }))
     : null;
-  const [categories, facets] = await Promise.all([
+  const [categories, facets, priceRange] = await Promise.all([
     getCategories(true).then((items) => items.filter((category) => category.parent === 0), () => []),
     loadCatalogFacets(),
+    getCatalogPriceRange().catch(() => ({ min: 0, max: 9999 })),
   ]);
   const attributes = [
     facets.color && filters.color && facets.color.terms.some((term) => term.slug === filters.color) ? { taxonomy: facets.color.taxonomy, slug: filters.color } : null,
@@ -53,7 +54,7 @@ export default async function ProductsPage({
         </nav>
       )}
       {productsResult.ok ? (
-        <CatalogResults collection={productsResult.value} page={filters.page} basePath="/produtos" filters={filters} color={facets.color} material={facets.material} />
+        <CatalogResults collection={productsResult.value} page={filters.page} basePath="/produtos" filters={filters} color={facets.color} material={facets.material} priceRange={priceRange} />
       ) : (
         <CatalogState title="Catálogo indisponível" message="Não foi possível carregar os produtos agora." retry retryHref="/produtos" />
       )}

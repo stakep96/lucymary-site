@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { CatalogPriceSlider } from "@/components/catalog-price-slider";
 import type { CatalogQuery } from "@/lib/catalog/catalog-query";
-import type { StoreAttributeTerm } from "@/lib/woocommerce/store-api";
+import type { CatalogPriceRange, StoreAttributeTerm } from "@/lib/woocommerce/store-api";
 
 export interface CatalogFacet {
   taxonomy: string;
@@ -12,9 +13,14 @@ interface CatalogFiltersProps {
   query: CatalogQuery;
   color?: CatalogFacet;
   material?: CatalogFacet;
+  priceRange?: CatalogPriceRange;
 }
 
-export function CatalogFilters({ basePath, query, color, material }: CatalogFiltersProps) {
+const colorReference = ["Bordô", "Dourado", "Prata", "Preto"];
+const materialReference = ["Aço", "Aço inoxidável", "Couro", "Ouro 18k", "Plástico", "Prata 925"];
+const colorClass = (name: string) => `catalog-color-${name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9-]/g, "-")}`;
+
+export function CatalogFilters({ basePath, query, color, material, priceRange = { min: 0, max: 9999 } }: CatalogFiltersProps) {
   const hasFilters = query.minPrice !== undefined || query.maxPrice !== undefined || query.rating !== undefined || query.color || query.material;
 
   return (
@@ -25,10 +31,7 @@ export function CatalogFilters({ basePath, query, color, material }: CatalogFilt
         {query.sort !== "recentes" && <input type="hidden" name="ordenar" value={query.sort} />}
         <fieldset>
           <legend>Filtrar por preço</legend>
-          <div className="catalog-price-fields">
-            <label>De <span>R$</span><input name="preco_min" type="number" min="0" step="0.01" placeholder="0" defaultValue={query.minPrice} /></label>
-            <label>Até <span>R$</span><input name="preco_max" type="number" min="0" step="0.01" placeholder="Máximo" defaultValue={query.maxPrice} /></label>
-          </div>
+          <CatalogPriceSlider range={priceRange} selectedMin={query.minPrice} selectedMax={query.maxPrice} />
         </fieldset>
         <fieldset>
           <legend>Filtrar por avaliação</legend>
@@ -40,20 +43,34 @@ export function CatalogFilters({ basePath, query, color, material }: CatalogFilt
             </label>
           ))}
         </fieldset>
-        {color && color.terms.length > 0 && (
-          <fieldset>
-            <legend>Cores</legend>
-            <label className="catalog-filter-choice"><input type="radio" name="cor" value="" defaultChecked={!query.color} /> Todas as cores</label>
-            {color.terms.map((term) => <label className="catalog-filter-choice" key={term.id}><input type="radio" name="cor" value={term.slug} defaultChecked={query.color === term.slug} />{term.name}</label>)}
-          </fieldset>
-        )}
-        {material && material.terms.length > 0 && (
-          <fieldset>
-            <legend>Material</legend>
-            <label className="catalog-filter-choice"><input type="radio" name="material" value="" defaultChecked={!query.material} /> Todos os materiais</label>
-            {material.terms.map((term) => <label className="catalog-filter-choice" key={term.id}><input type="radio" name="material" value={term.slug} defaultChecked={query.material === term.slug} />{term.name}</label>)}
-          </fieldset>
-        )}
+        <fieldset>
+          <legend>Cores</legend>
+          {color?.terms.length ? (
+            <>
+              <label className="catalog-filter-choice"><input type="radio" name="cor" value="" defaultChecked={!query.color} /> Todas as cores</label>
+              {color.terms.map((term) => <label className="catalog-filter-choice" key={term.id}><input type="radio" name="cor" value={term.slug} defaultChecked={query.color === term.slug} /><span className={`catalog-color-dot ${colorClass(term.name)}`} />{term.name}</label>)}
+            </>
+          ) : (
+            <>
+              {colorReference.map((name) => <label className="catalog-filter-choice catalog-filter-unavailable" key={name}><input type="checkbox" disabled /><span className={`catalog-color-dot ${colorClass(name)}`} />{name}</label>)}
+              <small className="catalog-filter-note">Aguardando opções vinculadas aos produtos no WooCommerce.</small>
+            </>
+          )}
+        </fieldset>
+        <fieldset>
+          <legend>Material</legend>
+          {material?.terms.length ? (
+            <>
+              <label className="catalog-filter-choice"><input type="radio" name="material" value="" defaultChecked={!query.material} /> Todos os materiais</label>
+              {material.terms.map((term) => <label className="catalog-filter-choice" key={term.id}><input type="radio" name="material" value={term.slug} defaultChecked={query.material === term.slug} />{term.name}</label>)}
+            </>
+          ) : (
+            <>
+              {materialReference.map((name) => <label className="catalog-filter-choice catalog-filter-unavailable" key={name}><input type="checkbox" disabled />{name}</label>)}
+              <small className="catalog-filter-note">Aguardando opções vinculadas aos produtos no WooCommerce.</small>
+            </>
+          )}
+        </fieldset>
         <div className="catalog-filter-actions">
           <button type="submit">Aplicar filtros</button>
           {hasFilters && <Link href={basePath}>Limpar</Link>}

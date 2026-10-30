@@ -3,7 +3,7 @@ import { Pagination } from "@/components/pagination";
 import { ProductCard } from "@/components/product-card";
 import { CatalogFilters, type CatalogFacet } from "@/components/catalog-filters";
 import { catalogQueryParams, type CatalogQuery } from "@/lib/catalog/catalog-query";
-import type { ProductCollection } from "@/lib/woocommerce/store-api";
+import type { CatalogPriceRange, ProductCollection } from "@/lib/woocommerce/store-api";
 
 interface CatalogResultsProps {
   collection: ProductCollection;
@@ -14,16 +14,17 @@ interface CatalogResultsProps {
   filters?: CatalogQuery;
   color?: CatalogFacet;
   material?: CatalogFacet;
+  priceRange?: CatalogPriceRange;
 }
 
-export function CatalogResults({ collection, page, basePath, query, emptyMessage, filters, color, material }: CatalogResultsProps) {
+export function CatalogResults({ collection, page, basePath, query, emptyMessage, filters, color, material, priceRange }: CatalogResultsProps) {
   const paginationQuery = filters ? catalogQueryParams(filters) : query;
   const first = collection.items.length === 0 ? 0 : (page - 1) * (filters?.perPage ?? 12) + 1;
   const last = collection.items.length === 0 ? 0 : Math.min(collection.total, first + collection.items.length - 1);
 
   return (
     <div className={filters ? "catalog-layout" : ""}>
-      {filters && <CatalogFilters basePath={basePath} query={filters} color={color} material={material} />}
+      {filters && <CatalogFilters basePath={basePath} query={filters} color={color} material={material} priceRange={priceRange} />}
       <div className="catalog-main">
         {filters ? (
           <div className="catalog-toolbar">

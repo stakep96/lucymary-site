@@ -5,7 +5,7 @@ import { CatalogResults } from "@/components/catalog-results";
 import { CatalogState } from "@/components/catalog-state";
 import { parseCatalogQuery } from "@/lib/catalog/catalog-query";
 import { loadCatalogFacets } from "@/lib/catalog/load-facets";
-import { getCategories, listProducts } from "@/lib/woocommerce/store-api";
+import { getCatalogPriceRange, getCategories, listProducts } from "@/lib/woocommerce/store-api";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -28,6 +28,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   if (!category) notFound();
 
   const facetsPromise = loadCatalogFacets();
+  const priceRangePromise = getCatalogPriceRange(category.slug).catch(() => ({ min: 0, max: 9999 }));
   const basicQuery = {
     category: category.slug, page: filters.page, perPage: filters.perPage,
     sort: filters.sort, minPrice: filters.minPrice, maxPrice: filters.maxPrice, rating: filters.rating,
@@ -36,6 +37,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     ? listProducts(basicQuery).then((value) => ({ value, ok: true as const }), () => ({ ok: false as const }))
     : null;
   const facets = await facetsPromise;
+  const priceRange = await priceRangePromise;
   const attributes = [
     facets.color && filters.color && facets.color.terms.some((term) => term.slug === filters.color) ? { taxonomy: facets.color.taxonomy, slug: filters.color } : null,
     facets.material && filters.material && facets.material.terms.some((term) => term.slug === filters.material) ? { taxonomy: facets.material.taxonomy, slug: filters.material } : null,
@@ -60,7 +62,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         ))}
       </nav>
       {collectionResult.ok ? (
-        <CatalogResults collection={collectionResult.value} page={filters.page} basePath={`/categoria/${encodeURIComponent(slug)}`} filters={filters} color={facets.color} material={facets.material} />
+        <CatalogResults collection={collectionResult.value} page={filters.page} basePath={`/categoria/${encodeURIComponent(slug)}`} filters={filters} color={facets.color} material={facets.material} priceRange={priceRange} />
       ) : (
         <CatalogState title="Categoria indisponível" message="Não foi possível carregar os produtos desta categoria agora." retry retryHref={`/categoria/${encodeURIComponent(slug)}`} />
       )}

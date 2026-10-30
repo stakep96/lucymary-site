@@ -95,6 +95,25 @@ export interface StoreAttributeTerm {
   count: number;
 }
 
+export interface CatalogPriceRange {
+  min: number;
+  max: number;
+}
+
+export async function getCatalogPriceRange(category?: string): Promise<CatalogPriceRange> {
+  const params = new URLSearchParams({ calculate_price_range: "true" });
+  if (category) params.set("category", category);
+  const data = await readJson(await getPublicResponse("/products/collection-data", params));
+  const range = (data as { price_range?: { min_price?: string; max_price?: string; currency_minor_unit?: number } })?.price_range;
+  const divisor = 10 ** Number(range?.currency_minor_unit);
+  const min = Number(range?.min_price) / divisor;
+  const max = Number(range?.max_price) / divisor;
+  if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(divisor) || divisor < 1 || min < 0 || max <= min) {
+    throw new StoreApiError("A faixa de preços do catálogo é inválida.");
+  }
+  return { min: Math.floor(min), max: Math.ceil(max) };
+}
+
 export async function getProductAttributes(): Promise<StoreAttribute[]> {
   const data = await readJson(await getPublicResponse("/products/attributes"));
   if (!Array.isArray(data)) throw new StoreApiError("Os atributos do catálogo são inválidos.");
