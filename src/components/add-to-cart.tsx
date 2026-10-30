@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { LoaderCircle } from "lucide-react";
 import { BagIcon } from "@/components/header-icons";
 import { useCart } from "@/features/cart/cart-provider";
 
@@ -18,21 +19,26 @@ interface AddToCartProps {
 export function AddToCart({ productId, available, selectionReady, selectionUpdating, soldIndividually, variation, quantity, onQuantityChange }: AddToCartProps) {
   const { status, busy, perform, openDrawer } = useCart();
   const [message, setMessage] = useState("");
-  const disabled = !available || !selectionReady || selectionUpdating || status !== "ready" || busy || !Number.isInteger(quantity) || quantity < 1 || quantity > 99;
+  const [submitting, setSubmitting] = useState(false);
+  const disabled = !available || !selectionReady || selectionUpdating || status !== "ready" || busy || submitting || !Number.isInteger(quantity) || quantity < 1 || quantity > 99;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (disabled || !Number.isInteger(quantity) || quantity < 1) return;
     setMessage("");
+    setSubmitting(true);
     try {
       await perform({ action: "add", id: productId, quantity, variation });
       openDrawer();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Não foi possível adicionar à sacola.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  const buttonText = !selectionReady ? "Escolha as opções" : !available ? "Indisponível" : status === "loading" ? "Preparando sacola..." : "Adicionar à sacola";
+  const buttonLoading = selectionUpdating || status === "loading" || submitting || busy;
+  const buttonText = selectionUpdating ? "Consultando opção..." : !selectionReady ? "Escolha as opções" : !available ? "Indisponível" : status === "loading" ? "Preparando sacola..." : submitting || busy ? "Atualizando sacola..." : "Adicionar à sacola";
 
   return (
     <form className="add-to-cart" onSubmit={(event) => { void submit(event); }}>
@@ -42,7 +48,7 @@ export function AddToCart({ productId, available, selectionReady, selectionUpdat
         </label>
       )}
       <div className="purchase-buttons">
-        <button className="add-to-cart-button" type="submit" disabled={disabled}><BagIcon size={19} />{buttonText}</button>
+        <button className="add-to-cart-button" type="submit" disabled={disabled}>{buttonLoading ? <LoaderCircle size={19} className="button-spinner" aria-hidden="true" /> : <BagIcon size={19} />}{buttonText}</button>
         <button className="buy-now-button" type="button" disabled aria-describedby="checkout-pending-note">Comprar agora</button>
       </div>
       <p className="checkout-pending-note" id="checkout-pending-note">Compra direta disponível após a validação do checkout com o WooCommerce.</p>

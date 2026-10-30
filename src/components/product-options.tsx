@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
-import { Truck } from "lucide-react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { ChevronLeft, ChevronRight, LoaderCircle, Truck } from "lucide-react";
 import { AddToCart } from "@/components/add-to-cart";
 import { formatCartAmount } from "@/features/cart/format";
 import type { CartCurrency, CartShippingPackage } from "@/features/cart/types";
@@ -44,6 +44,60 @@ function bestVariation(variations: StoreVariationSummary[], choices: Record<stri
   return variations.filter((variation) => accepts(variation, choices)).sort((a, b) =>
     b.attributes.filter((attribute) => attribute.value).length - a.attributes.filter((attribute) => attribute.value).length,
   )[0];
+}
+
+function RingSizeSelector({ attribute, choices, variations, updating, onSelect }: {
+  attribute: StoreProductAttribute;
+  choices: Record<string, string>;
+  variations: StoreVariationSummary[];
+  updating: boolean;
+  onSelect: (name: string, value: string) => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [scrollEdges, setScrollEdges] = useState({ start: true, end: false });
+
+  function updateScrollEdges() {
+    const track = trackRef.current;
+    if (!track) return;
+    const start = track.scrollLeft <= 2;
+    const end = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+    setScrollEdges((current) => current.start === start && current.end === end ? current : { start, end });
+  }
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const observer = new ResizeObserver(updateScrollEdges);
+    observer.observe(track);
+    updateScrollEdges();
+    return () => observer.disconnect();
+  }, [attribute.terms.length]);
+
+  function move(direction: -1 | 1) {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollBy({ left: direction * Math.max(track.clientWidth * .72, 108), behavior: "smooth" });
+  }
+
+  return (
+    <fieldset className="product-option-group ring-size-group">
+      <legend>Tamanho do Aro {choices[attribute.name] && <span>{choices[attribute.name]}</span>}</legend>
+      <div className="ring-size-selector">
+        <button className="ring-size-arrow" type="button" aria-label="Ver tamanhos anteriores" disabled={scrollEdges.start} onClick={() => move(-1)}><ChevronLeft size={18} /></button>
+        <div className="ring-size-track" ref={trackRef} onScroll={updateScrollEdges}>
+          {attribute.terms.map((term) => {
+            const selected = normal(choices[attribute.name] || "") === normal(term.name);
+            const candidate = { ...choices, [attribute.name]: term.name };
+            const possible = variations.some((item) => accepts(item, candidate));
+            return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={!possible} onClick={() => onSelect(attribute.name, term.name)} key={term.id || term.name}>
+              {selected && updating ? <LoaderCircle size={15} className="button-spinner" aria-label="Consultando tamanho" /> : term.name}
+            </button>;
+          })}
+        </div>
+        <button className="ring-size-arrow" type="button" aria-label="Ver próximos tamanhos" disabled={scrollEdges.end} onClick={() => move(1)}><ChevronRight size={18} /></button>
+      </div>
+    </fieldset>
+  );
 }
 
 export function ProductOptions({ slug, productId, currentId, isVariable, available, soldIndividually, attributes, variations, initialChoices }: ProductOptionsProps) {
@@ -116,7 +170,9 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
       {isVariable && (
         <section className="variation-section" aria-label="Personalizar produto">
           <div className="variation-heading"><span className="eyebrow">Sua escolha</span><h2>Personalize sua peça</h2></div>
-          {attributes.map((attribute) => (
+          {attributes.map((attribute) => /\baro\b|tamanho do anel/i.test(attribute.name) ? (
+            <RingSizeSelector key={attribute.name} attribute={attribute} choices={choices} variations={variations} updating={selectionUpdating} onSelect={select} />
+          ) : (
             <fieldset className="product-option-group" key={attribute.name}>
               <legend>{attribute.name} {choices[attribute.name] && <span>{choices[attribute.name]}</span>}</legend>
               <div className={`product-option-values${attribute.terms.length > 12 ? " compact" : ""}`}>
@@ -124,7 +180,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
                   const selected = normal(choices[attribute.name] || "") === normal(term.name);
                   const candidate = { ...choices, [attribute.name]: term.name };
                   const possible = variations.some((item) => accepts(item, candidate));
-                  return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={!possible} onClick={() => select(attribute.name, term.name)} key={term.id || term.name}>{term.name}</button>;
+                  return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={!possible} onClick={() => select(attribute.name, term.name)} key={term.id || term.name}>{selected && selectionUpdating ? <LoaderCircle size={15} className="button-spinner" aria-label="Consultando opção" /> : term.name}</button>;
                 })}
               </div>
             </fieldset>
@@ -145,7 +201,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
         <form onSubmit={(event) => { void calculateShipping(event); }}>
           <label className="sr-only" htmlFor="product-postcode">CEP de entrega</label>
           <input id="product-postcode" inputMode="numeric" autoComplete="postal-code" placeholder="Digite seu CEP" value={postcode} onChange={(event) => { setPostcode(event.target.value); setQuote(null); }} maxLength={9} />
-          <button type="submit" disabled={quoteLoading || selectionUpdating || !selectionReady || !available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99}>{quoteLoading ? "Calculando..." : "Calcular"}</button>
+          <button type="submit" disabled={quoteLoading || selectionUpdating || !selectionReady || !available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99}>{quoteLoading && <LoaderCircle size={16} className="button-spinner" aria-hidden="true" />}{quoteLoading ? "Calculando frete..." : "Calcular"}</button>
         </form>
         {quoteError && <p className="product-shipping-error" role="alert">{quoteError}</p>}
         {quote && <div className="product-shipping-results" role="status">

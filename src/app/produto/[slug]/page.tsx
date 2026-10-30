@@ -109,6 +109,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
         <div className="detail-info">
           {category && <Link className="eyebrow" href={`/categoria/${encodeURIComponent(category.slug)}`}>{category.name}</Link>}
           <h1>{product.name}</h1>
+          {shortDescription && <p className="detail-short-description">{shortDescription}</p>}
           <p className="detail-price">
             {isVariable && !variation && "A partir de "}
             {formatStorePrice(current.prices)}
@@ -128,7 +129,6 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
             variations={product.variations || []}
             initialChoices={initialChoices}
           />
-          {shortDescription && <div className="detail-short-description"><h2>Sobre esta peça</h2><p>{shortDescription}</p></div>}
           {product.sku && <p className="detail-sku">Referência: {product.sku}</p>}
           <p className="detail-note">O WooCommerce confirma preço e disponibilidade ao adicionar à sacola. A finalização da compra está em preparação.</p>
         </div>
