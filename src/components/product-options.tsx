@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition, type CSSProperties, type FormEvent, type TouchEvent } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type CSSProperties, type FormEvent, type TouchEvent } from "react";
 import { ChevronLeft, ChevronRight, Ruler, Truck, X } from "lucide-react";
 import { AddToCart } from "@/components/add-to-cart";
 import { formatCartAmount } from "@/features/cart/format";
@@ -46,11 +46,10 @@ function bestVariation(variations: StoreVariationSummary[], choices: Record<stri
   )[0];
 }
 
-function RingSizeSelector({ attribute, choices, variations, updating, onSelect }: {
+function RingSizeSelector({ attribute, choices, variations, onSelect }: {
   attribute: StoreProductAttribute;
   choices: Record<string, string>;
   variations: StoreVariationSummary[];
-  updating: boolean;
   onSelect: (name: string, value: string) => void;
 }) {
   const selectedIndex = attribute.terms.findIndex((term) => normal(term.name) === normal(choices[attribute.name] || ""));
@@ -72,13 +71,13 @@ function RingSizeSelector({ attribute, choices, variations, updating, onSelect }
 
   function selectIndex(index: number) {
     const term = attribute.terms[index];
-    if (!term || updating || !isPossible(index)) return;
+    if (!term || !isPossible(index)) return;
     setDefaultFocusIndex(index);
     onSelect(attribute.name, term.name);
   }
 
   function move(direction: -1 | 1) {
-    if (!count || updating) return;
+    if (!count) return;
     for (let step = 1; step <= count; step += 1) {
       const index = (focusIndex + direction * step + count * 2) % count;
       if (isPossible(index)) { selectIndex(index); return; }
@@ -98,16 +97,16 @@ function RingSizeSelector({ attribute, choices, variations, updating, onSelect }
     <fieldset className="product-option-group ring-size-group">
       <legend>Tamanho do Aro {choices[attribute.name] && <span>{choices[attribute.name]}</span>}</legend>
       <div className="ring-size-selector" style={{ "--ring-slots": slots } as CSSProperties} onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={endTouch}>
-        <button className="ring-size-arrow" type="button" aria-label="Selecionar aro anterior" disabled={count < 2 || updating} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) move(-1); }}><ChevronLeft size={18} /></button>
+        <button className="ring-size-arrow" type="button" aria-label="Selecionar aro anterior" disabled={count < 2} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) move(-1); }}><ChevronLeft size={18} /></button>
         <div className="ring-size-track">
           {visibleIndices.map((index, position) => {
             const term = attribute.terms[index];
             const selected = selectedIndex === index;
             const centered = position === center;
-            return <button type="button" className={`${centered ? "centered" : ""}${selected ? " selected" : ""}`} aria-pressed={selected} aria-label={`Aro ${term.name}`} disabled={updating || !isPossible(index)} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) selectIndex(index); }} key={term.id || term.name}>{term.name}</button>;
+            return <button type="button" className={`${centered ? "centered" : ""}${selected ? " selected" : ""}`} aria-pressed={selected} aria-label={`Aro ${term.name}`} disabled={!isPossible(index)} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) selectIndex(index); }} key={term.id || term.name}>{term.name}</button>;
           })}
         </div>
-        <button className="ring-size-arrow" type="button" aria-label="Selecionar próximo aro" disabled={count < 2 || updating} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) move(1); }}><ChevronRight size={18} /></button>
+        <button className="ring-size-arrow" type="button" aria-label="Selecionar próximo aro" disabled={count < 2} onClick={() => { if (Date.now() - lastSwipeAt.current >= 300) move(1); }}><ChevronRight size={18} /></button>
       </div>
       <button className="ring-size-guide-trigger" type="button" onClick={() => guideRef.current?.showModal()}><Ruler size={16} aria-hidden="true" />Tabela de medidas</button>
       <dialog className="ring-size-dialog" ref={guideRef} aria-labelledby={guideTitleId} onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
@@ -125,15 +124,19 @@ function RingSizeSelector({ attribute, choices, variations, updating, onSelect }
 export function ProductOptions({ slug, productId, currentId, isVariable, available, soldIndividually, attributes, variations, initialChoices }: ProductOptionsProps) {
   const router = useRouter();
   const [choices, setChoices] = useState(initialChoices);
+  const choicesRef = useRef(choices);
+  const selectionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [ringBrowsing, setRingBrowsing] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [postcode, setPostcode] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState("");
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [selectionUpdating, startTransition] = useTransition();
+  useEffect(() => () => { if (selectionTimer.current) clearTimeout(selectionTimer.current); }, []);
   const complete = attributes.every((attribute) => Boolean(choices[attribute.name]));
   const matched = complete && attributes.length ? bestVariation(variations, choices) : null;
-  const selectionReady = !isVariable || (attributes.length === 0 ? currentId !== productId : Boolean(matched && matched.id === currentId));
+  const selectionReady = !ringBrowsing && (!isVariable || (attributes.length === 0 ? currentId !== productId : Boolean(matched && matched.id === currentId)));
   const variation = isVariable && attributes.length ? attributes.map((attribute) => ({
     attribute: attribute.name,
     value: choices[attribute.name] || "",
@@ -147,20 +150,38 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
     startTransition(() => router.replace(path, { scroll: false }));
   }
 
-  function select(name: string, value: string) {
-    const next = { ...choices, [name]: value };
+  function commitSelection(next: Record<string, string>) {
+    const allChosen = attributes.every((attribute) => Boolean(next[attribute.name]));
+    navigate(next, allChosen ? bestVariation(variations, next)?.id : undefined);
+  }
+
+  function select(name: string, value: string, browseRing = false) {
+    if (normal(choicesRef.current[name] || "") === normal(value) && !selectionTimer.current) return;
+    const next = { ...choicesRef.current, [name]: value };
+    choicesRef.current = next;
     setChoices(next);
     setQuote(null);
     setQuoteError("");
-    const allChosen = attributes.every((attribute) => Boolean(next[attribute.name]));
-    navigate(next, allChosen ? bestVariation(variations, next)?.id : undefined);
+    if (selectionTimer.current) clearTimeout(selectionTimer.current);
+    selectionTimer.current = null;
+    if (browseRing) {
+      setRingBrowsing(true);
+      selectionTimer.current = setTimeout(() => {
+        selectionTimer.current = null;
+        setRingBrowsing(false);
+        commitSelection(choicesRef.current);
+      }, 750);
+    } else {
+      setRingBrowsing(false);
+      commitSelection(next);
+    }
   }
 
   async function calculateShipping(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setQuote(null);
     setQuoteError("");
-    if (!selectionReady) {
+    if (!selectionReady || selectionUpdating) {
       setQuoteError("Escolha as opções do produto para consultar o frete.");
       return;
     }
@@ -193,7 +214,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
         <section className="variation-section" aria-label="Personalizar produto">
           <div className="variation-heading"><span className="eyebrow">Sua escolha</span><h2>Personalize sua peça</h2></div>
           {attributes.map((attribute) => /\baro\b|tamanho do anel/i.test(attribute.name) ? (
-            <RingSizeSelector key={attribute.name} attribute={attribute} choices={choices} variations={variations} updating={selectionUpdating} onSelect={select} />
+            <RingSizeSelector key={attribute.name} attribute={attribute} choices={choices} variations={variations} onSelect={(name, value) => select(name, value, true)} />
           ) : (
             <fieldset className="product-option-group" key={attribute.name}>
               <legend>{attribute.name} {choices[attribute.name] && <span>{choices[attribute.name]}</span>}</legend>
@@ -202,7 +223,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
                   const selected = normal(choices[attribute.name] || "") === normal(term.name);
                   const candidate = { ...choices, [attribute.name]: term.name };
                   const possible = variations.some((item) => accepts(item, candidate));
-                  return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={selectionUpdating || !possible} onClick={() => select(attribute.name, term.name)} key={term.id || term.name}>{term.name}</button>;
+                  return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} disabled={!possible} onClick={() => select(attribute.name, term.name)} key={term.id || term.name}>{term.name}</button>;
                 })}
               </div>
             </fieldset>
@@ -215,7 +236,7 @@ export function ProductOptions({ slug, productId, currentId, isVariable, availab
         </section>
       )}
 
-      <AddToCart productId={currentId} available={available} selectionReady={selectionReady} selectionUpdating={selectionUpdating}
+      <AddToCart productId={currentId} available={available} selectionReady={selectionReady} selectionUpdating={selectionUpdating} selectionBrowsing={ringBrowsing}
         soldIndividually={soldIndividually} variation={variation} quantity={quantity} onQuantityChange={(next) => { setQuantity(next); setQuote(null); }} />
 
       <section className="product-shipping" aria-labelledby="product-shipping-title">

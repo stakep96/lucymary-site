@@ -10,17 +10,18 @@ interface AddToCartProps {
   available: boolean;
   selectionReady: boolean;
   selectionUpdating: boolean;
+  selectionBrowsing: boolean;
   soldIndividually: boolean;
   variation: Array<{ attribute: string; value: string }>;
   quantity: number;
   onQuantityChange: (quantity: number) => void;
 }
 
-export function AddToCart({ productId, available, selectionReady, selectionUpdating, soldIndividually, variation, quantity, onQuantityChange }: AddToCartProps) {
+export function AddToCart({ productId, available, selectionReady, selectionUpdating, selectionBrowsing, soldIndividually, variation, quantity, onQuantityChange }: AddToCartProps) {
   const { status, busy, perform, openDrawer } = useCart();
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const disabled = !available || !selectionReady || selectionUpdating || status !== "ready" || busy || submitting || !Number.isInteger(quantity) || quantity < 1 || quantity > 99;
+  const disabled = !available || !selectionReady || selectionBrowsing || selectionUpdating || status !== "ready" || busy || submitting || !Number.isInteger(quantity) || quantity < 1 || quantity > 99;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,7 +39,7 @@ export function AddToCart({ productId, available, selectionReady, selectionUpdat
   }
 
   const buttonLoading = selectionUpdating || status === "loading" || submitting || busy;
-  const buttonText = selectionUpdating ? "Consultando opção..." : !selectionReady ? "Escolha as opções" : !available ? "Indisponível" : status === "loading" ? "Preparando sacola..." : submitting || busy ? "Atualizando sacola..." : "Adicionar à sacola";
+  const buttonText = selectionUpdating ? "Consultando opção..." : selectionBrowsing ? "Escolhendo aro..." : !selectionReady ? "Escolha as opções" : !available ? "Indisponível" : status === "loading" ? "Preparando sacola..." : submitting || busy ? "Atualizando sacola..." : "Adicionar à sacola";
 
   return (
     <form className="add-to-cart" onSubmit={(event) => { void submit(event); }}>
