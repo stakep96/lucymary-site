@@ -85,7 +85,7 @@ export interface ProductQuery {
 export interface StoreAttribute {
   id: number;
   name: string;
-  slug: string;
+  taxonomy: string;
 }
 
 export interface StoreAttributeTerm {
@@ -102,7 +102,7 @@ export async function getProductAttributes(): Promise<StoreAttribute[]> {
 }
 
 export async function getAttributeTerms(id: number): Promise<StoreAttributeTerm[]> {
-  const data = await readJson(await getPublicResponse(`/products/attributes/${id}/terms`, new URLSearchParams({ per_page: "100" })));
+  const data = await readJson(await getPublicResponse(`/products/attributes/${id}/terms`));
   if (!Array.isArray(data)) throw new StoreApiError("Os termos do atributo são inválidos.");
   return data as StoreAttributeTerm[];
 }
