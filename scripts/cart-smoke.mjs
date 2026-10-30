@@ -1,5 +1,17 @@
 const base = process.env.CART_SMOKE_BASE || "http://127.0.0.1:3001";
 const origin = new URL(base).origin;
+const simpleId = Number(process.env.CART_SMOKE_SIMPLE_ID || 17903);
+const variationId = Number(process.env.CART_SMOKE_VARIATION_ID || 17518);
+const variationAttributes = process.env.CART_SMOKE_VARIATION_ATTRIBUTES
+  ? JSON.parse(process.env.CART_SMOKE_VARIATION_ATTRIBUTES)
+  : [
+      { attribute: "Ouro 10k", value: "Teor 416" },
+      { attribute: "Ouro 18k", value: "Teor 750" },
+    ];
+
+if (!Number.isSafeInteger(simpleId) || simpleId < 1 || !Number.isSafeInteger(variationId) || variationId < 1 || !Array.isArray(variationAttributes)) {
+  throw new Error("Configure IDs de produtos e atributos da variação válidos para esta loja.");
+}
 
 async function call(path, cookie = "", action) {
   const response = await fetch(new URL(path, base), {
@@ -26,7 +38,7 @@ assert(a.cookie && b.cookie && a.cookie !== b.cookie, "As sessões não recebera
 assert(a.data.itemsCount === 0 && b.data.itemsCount === 0, "Os carrinhos de teste não começaram vazios.");
 
 try {
-  a = await call("/api/cart", a.cookie, { action: "add", id: 17903, quantity: 1, variation: [] });
+  a = await call("/api/cart", a.cookie, { action: "add", id: simpleId, quantity: 1, variation: [] });
   assert(a.data.itemsCount === 1, "A inclusão do produto simples falhou.");
   const simpleKey = a.data.items[0].key;
 
@@ -64,11 +76,8 @@ try {
   assert(a.data.itemsCount === 0, "A remoção do produto simples falhou.");
 
   a = await call("/api/cart", a.cookie, {
-    action: "add", id: 17518, quantity: 1,
-    variation: [
-      { attribute: "Ouro 10k", value: "Teor 416" },
-      { attribute: "Ouro 18k", value: "Teor 750" },
-    ],
+    action: "add", id: variationId, quantity: 1,
+    variation: variationAttributes,
   });
   assert(a.data.itemsCount === 1, "A inclusão da variação falhou.");
   a = await call("/api/cart", a.cookie, { action: "remove", key: a.data.items[0].key });

@@ -9,7 +9,7 @@
 
 ## Dados necessários para a próxima validação
 
-1. URL de uma cópia de staging do WordPress/WooCommerce com plugins de pagamento e entrega equivalentes, mas credenciais de pagamento de teste e notificações de produção desativadas.
+1. URL do novo WordPress/WooCommerce em ambiente de teste, com os plugins de pagamento e entrega desejados, credenciais de pagamento de teste e notificações de produção desativadas. Como a nova loja será criada do zero, ela própria pode servir para os testes antes de entrar em produção.
 2. Um cupom válido criado para teste. O código pode ser informado sem enviar senhas nem chaves; a aplicação e remoção serão feitas em um carrinho temporário.
 3. Identificação do plugin e versão instalados para o Mercado Pago, e confirmação de que o Checkout Pro está habilitado no staging. Isso também pode ser visto no painel do WordPress.
 4. Opcional: uma chave WooCommerce REST **Read** gerada em WooCommerce → Configurações → Avançado → REST API. Guarde a chave e o segredo somente em `.env.local` como `WOOCOMMERCE_READ_KEY` e `WOOCOMMERCE_READ_SECRET`; não os envie por chat nem configure no navegador. Execute `node --env-file=.env.local scripts/woo-readiness.mjs` localmente. O script lê apenas `/wp-json/wc/v3/payment_gateways`, imprime ID, estado e recursos declarados, descartando `settings` da resposta. A chave não é necessária para o carrinho público.
