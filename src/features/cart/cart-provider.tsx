@@ -21,6 +21,13 @@ function errorMessage(value: unknown): string {
   return value instanceof Error ? value.message : "Não foi possível atualizar a sacola. Tente novamente.";
 }
 
+async function readCart(signal?: AbortSignal): Promise<CartView> {
+  const response = await fetch("/api/cart", { cache: "no-store", credentials: "same-origin", signal });
+  const data = await response.json();
+  if (!response.ok || !Array.isArray(data.items)) throw new Error(data.error || "Não foi possível carregar a sacola.");
+  return data as CartView;
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartView | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -33,10 +40,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setStatus("loading");
     setError(null);
     try {
-      const response = await fetch("/api/cart", { cache: "no-store", credentials: "same-origin" });
-      const data = await response.json();
-      if (!response.ok || !Array.isArray(data.items)) throw new Error(data.error || "Não foi possível carregar a sacola.");
-      setCart(data as CartView);
+      const data = await readCart();
+      setCart(data);
       setStatus("ready");
     } catch (cause) {
       setStatus("error");
@@ -46,21 +51,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/cart", { cache: "no-store", credentials: "same-origin", signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok || !Array.isArray(data.items)) throw new Error(data.error || "Não foi possível carregar a sacola.");
-        return data as CartView;
-      })
-      .then((data) => {
-        setCart(data);
-        setStatus("ready");
-      })
-      .catch((cause) => {
-        if (controller.signal.aborted) return;
-        setStatus("error");
-        setError(errorMessage(cause));
-      });
+    async function initialize() {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const startedAt = Date.now();
+        try {
+          const data = await readCart(controller.signal);
+          if (controller.signal.aborted) return;
+          setCart(data);
+          setStatus("ready");
+          setError(null);
+          return;
+        } catch (cause) {
+          if (controller.signal.aborted) return;
+          if (attempt === 0 && Date.now() - startedAt < 10_000) {
+            await new Promise((resolve) => setTimeout(resolve, 700));
+            if (controller.signal.aborted) return;
+            continue;
+          }
+          setStatus("error");
+          setError(errorMessage(cause));
+        }
+      }
+    }
+    void initialize();
     return () => controller.abort();
   }, []);
 
