@@ -18,7 +18,7 @@ export function CatalogFilters({ basePath, query, color, material }: CatalogFilt
   const hasFilters = query.minPrice !== undefined || query.maxPrice !== undefined || query.rating !== undefined || query.color || query.material;
 
   return (
-    <details className="catalog-filters">
+    <details className="catalog-filters" open>
       <summary>Filtrar produtos <span aria-hidden="true">⌄</span></summary>
       <form action={basePath} className="catalog-filter-form">
         {query.perPage !== 16 && <input type="hidden" name="por_pagina" value={query.perPage} />}
