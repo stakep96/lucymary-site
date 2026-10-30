@@ -75,6 +75,36 @@ export interface ProductQuery {
   category?: string;
   search?: string;
   slug?: string;
+  sort?: "recentes" | "preco_menor" | "preco_maior" | "avaliacao" | "populares";
+  minPrice?: number;
+  maxPrice?: number;
+  rating?: number;
+  attributes?: Array<{ taxonomy: string; slug: string }>;
+}
+
+export interface StoreAttribute {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface StoreAttributeTerm {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+}
+
+export async function getProductAttributes(): Promise<StoreAttribute[]> {
+  const data = await readJson(await getPublicResponse("/products/attributes"));
+  if (!Array.isArray(data)) throw new StoreApiError("Os atributos do catálogo são inválidos.");
+  return data as StoreAttribute[];
+}
+
+export async function getAttributeTerms(id: number): Promise<StoreAttributeTerm[]> {
+  const data = await readJson(await getPublicResponse(`/products/attributes/${id}/terms`, new URLSearchParams({ per_page: "100" })));
+  if (!Array.isArray(data)) throw new StoreApiError("Os termos do atributo são inválidos.");
+  return data as StoreAttributeTerm[];
 }
 
 export interface ProductCollection {
@@ -91,6 +121,19 @@ export async function listProducts(query: ProductQuery = {}): Promise<ProductCol
     per_page: String(perPage),
     orderby: "date",
     order: "desc",
+  });
+  if (query.sort === "preco_menor" || query.sort === "preco_maior") {
+    params.set("orderby", "price");
+    params.set("order", query.sort === "preco_menor" ? "asc" : "desc");
+  } else if (query.sort === "avaliacao" || query.sort === "populares") {
+    params.set("orderby", query.sort === "avaliacao" ? "rating" : "popularity");
+  }
+  if (query.minPrice !== undefined) params.set("min_price", String(Math.round(query.minPrice * 100)));
+  if (query.maxPrice !== undefined) params.set("max_price", String(Math.round(query.maxPrice * 100)));
+  if (query.rating !== undefined) params.set("rating", String(query.rating));
+  query.attributes?.forEach((attribute, index) => {
+    params.set(`attributes[${index}][attribute]`, attribute.taxonomy);
+    params.set(`attributes[${index}][slug]`, attribute.slug);
   });
   if (query.category) params.set("category", query.category);
   if (query.search) params.set("search", query.search);

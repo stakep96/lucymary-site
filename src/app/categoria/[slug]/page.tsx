@@ -3,12 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogResults } from "@/components/catalog-results";
 import { CatalogState } from "@/components/catalog-state";
-import { parsePage } from "@/lib/catalog/parse-page";
+import { parseCatalogQuery } from "@/lib/catalog/catalog-query";
+import { loadCatalogFacets } from "@/lib/catalog/load-facets";
 import { getCategories, listProducts } from "@/lib/woocommerce/store-api";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ pagina?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export const revalidate = 60;
@@ -21,17 +22,27 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { slug } = await params;
-  const page = parsePage((await searchParams).pagina);
+  const filters = parseCatalogQuery(await searchParams);
   const categories = await getCategories(true);
   const category = categories.find((item) => item.slug === slug);
   if (!category) notFound();
 
-  let collection;
-  try {
-    collection = await listProducts({ category: category.slug, page, perPage: 12 });
-  } catch {
-    collection = null;
-  }
+  const facetsPromise = loadCatalogFacets();
+  const basicQuery = {
+    category: category.slug, page: filters.page, perPage: filters.perPage,
+    sort: filters.sort, minPrice: filters.minPrice, maxPrice: filters.maxPrice, rating: filters.rating,
+  };
+  const simpleCollection = !filters.color && !filters.material
+    ? listProducts(basicQuery).then((value) => ({ value, ok: true as const }), () => ({ ok: false as const }))
+    : null;
+  const facets = await facetsPromise;
+  const attributes = [
+    facets.color && filters.color && facets.color.terms.some((term) => term.slug === filters.color) ? { taxonomy: facets.color.taxonomy, slug: filters.color } : null,
+    facets.material && filters.material && facets.material.terms.some((term) => term.slug === filters.material) ? { taxonomy: facets.material.taxonomy, slug: filters.material } : null,
+  ].filter((item): item is { taxonomy: string; slug: string } => item !== null);
+  const collectionResult = simpleCollection
+    ? await simpleCollection
+    : await listProducts({ ...basicQuery, attributes }).then((value) => ({ value, ok: true as const }), () => ({ ok: false as const }));
 
   return (
     <section className="catalog-page shell">
@@ -48,8 +59,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           <Link className={`category-pill${item.id === category.id ? " active" : ""}`} href={`/categoria/${encodeURIComponent(item.slug)}`} key={item.id} aria-current={item.id === category.id ? "page" : undefined}>{item.name}</Link>
         ))}
       </nav>
-      {collection ? (
-        <CatalogResults collection={collection} page={page} basePath={`/categoria/${encodeURIComponent(slug)}`} />
+      {collectionResult.ok ? (
+        <CatalogResults collection={collectionResult.value} page={filters.page} basePath={`/categoria/${encodeURIComponent(slug)}`} filters={filters} color={facets.color} material={facets.material} />
       ) : (
         <CatalogState title="Categoria indisponível" message="Não foi possível carregar os produtos desta categoria agora." retry retryHref={`/categoria/${encodeURIComponent(slug)}`} />
       )}

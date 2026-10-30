@@ -185,6 +185,75 @@ button { font: inherit; }
   .hero-link, .product-image { transition: none; }
 }
 
+/* Catálogo e páginas de categoria */
+.catalog-page { max-width: 1320px; padding-top: 38px; }
+.catalog-page .breadcrumb { margin-bottom: 24px; }
+.catalog-page .catalog-intro { margin-bottom: 22px; }
+.catalog-page .catalog-intro h1 { margin-block: 6px 8px; font-size: clamp(30px, 3.2vw, 45px); }
+.catalog-page .catalog-intro p { font-size: 12px; }
+.catalog-page .category-list-left { gap: 7px; margin-bottom: 30px; }
+.catalog-page .category-pill { padding: 8px 12px; font-size: 10px; letter-spacing: .03em; }
+.catalog-layout { display: grid; grid-template-columns: minmax(195px, 225px) minmax(0, 1fr); align-items: start; gap: clamp(24px, 3.5vw, 48px); }
+.catalog-filters { min-width: 0; color: #36303a; font-family: Poppins, Arial, sans-serif; }
+.catalog-filters > summary { display: none; }
+.catalog-filters:not([open]) .catalog-filter-form { display: grid; }
+.catalog-filter-form { display: grid; gap: 25px; }
+.catalog-filter-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.catalog-filter-form legend { margin-bottom: 12px; color: #49343f; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.catalog-price-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.catalog-price-fields label { display: block; color: #686069; font-size: 10px; }
+.catalog-price-fields label span { color: var(--wine); font-size: 11px; }
+.catalog-price-fields input { width: 100%; min-width: 0; height: 34px; display: block; margin-top: 5px; border: 1px solid #e1d8dc; border-radius: 2px; padding: 0 6px; background: #fff; color: #352930; font-size: 11px; }
+.catalog-filter-choice { min-height: 23px; display: flex; align-items: center; gap: 8px; color: #4c464b; font-size: 11px; cursor: pointer; }
+.catalog-filter-choice input { width: 14px; height: 14px; margin: 0; accent-color: var(--wine); }
+.catalog-filter-stars { color: #e9a22d; letter-spacing: 1px; white-space: nowrap; }
+.catalog-filter-stars span { color: #dedede; }
+.catalog-filter-actions { display: flex; align-items: center; gap: 12px; }
+.catalog-filter-actions button { min-height: 36px; border: 1px solid var(--wine); padding: 0 12px; background: var(--wine); color: #fff; cursor: pointer; font-size: 11px; }
+.catalog-filter-actions a { color: var(--wine); font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.catalog-main { min-width: 0; }
+.catalog-toolbar { min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; padding: 12px 17px; background: #f8f8f9; font-family: Poppins, Arial, sans-serif; }
+.catalog-toolbar p { margin: 0; color: #514a50; font-size: 11px; white-space: nowrap; }
+.catalog-toolbar form { display: flex; align-items: center; gap: 12px; }
+.catalog-toolbar label { display: flex; align-items: center; gap: 6px; color: #6c626a; font-size: 10px; white-space: nowrap; }
+.catalog-toolbar select { height: 33px; max-width: 155px; border: 1px solid #e5e1e3; padding: 0 7px; background: #fff; color: #453a42; font-size: 11px; }
+.catalog-toolbar button { height: 33px; border: 1px solid var(--wine); padding: 0 10px; background: #fff; color: var(--wine); cursor: pointer; font-size: 11px; }
+.catalog-toolbar button:hover, .catalog-filter-actions button:hover { background: #5d002d; color: #fff; }
+.catalog-layout .product-grid { gap: 40px 12px; }
+.catalog-layout .product-image-wrap { aspect-ratio: 1 / 1; }
+.catalog-layout .product-copy h3 { min-height: 3em; }
+.catalog-card-action { min-height: 33px; display: inline-flex; align-items: center; justify-content: center; margin-top: 10px; border: 1px solid var(--wine); padding: 0 11px; background: var(--wine); color: #fff; font-size: 10px; font-weight: 500; }
+.catalog-card-action:hover, .catalog-card-action:focus-visible { background: #fff; color: var(--wine); }
+.pagination { justify-content: center; gap: 7px; border: 0; padding-top: 0; }
+.pagination a { min-width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid #e9e4e7; color: #50444b; font-family: Poppins, Arial, sans-serif; font-size: 12px; font-weight: 400; }
+.pagination a:hover, .pagination a:focus-visible, .pagination a[aria-current="page"] { border-color: var(--wine); background: var(--wine); color: #fff; text-decoration: none; }
+
+@media (max-width: 1000px) {
+  .catalog-layout { grid-template-columns: minmax(170px, 190px) minmax(0, 1fr); gap: 20px; }
+  .catalog-layout .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .catalog-toolbar { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 700px) {
+  .catalog-page { padding-top: 22px; }
+  .catalog-page .category-list-left { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 20px; padding-bottom: 5px; }
+  .catalog-page .category-pill { flex: 0 0 auto; }
+  .catalog-layout { display: block; }
+  .catalog-filters { margin-bottom: 12px; border: 1px solid #e9dde3; }
+  .catalog-filters > summary { min-height: 45px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; color: var(--wine); font-size: 12px; font-weight: 600; cursor: pointer; list-style: none; }
+  .catalog-filters > summary::-webkit-details-marker { display: none; }
+  .catalog-filters:not([open]) .catalog-filter-form { display: none; }
+  .catalog-filters:not([open]) > summary span { transform: rotate(-90deg); }
+  .catalog-filter-form { gap: 20px; padding: 4px 14px 17px; }
+  .catalog-toolbar { gap: 9px; padding: 12px; }
+  .catalog-toolbar form { flex-wrap: wrap; gap: 8px; }
+  .catalog-toolbar label { font-size: 10px; }
+  .catalog-toolbar select { max-width: 130px; }
+  .catalog-layout .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 27px 10px; }
+  .catalog-layout .product-copy h3 { min-height: 3.3em; font-size: 11px; }
+  .catalog-card-action { margin-top: 8px; font-size: 9px; }
+}
+
 /* LucyMary: identidade visual da loja */
 :root {
   --ink: #282126;
