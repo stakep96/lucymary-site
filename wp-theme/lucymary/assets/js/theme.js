@@ -44,6 +44,16 @@
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }));
 
+  const backToTop = q('.lm-back-to-top');
+  if (backToTop) {
+    const updateBackToTop = () => backToTop.classList.toggle('is-visible', window.scrollY > 450);
+    window.addEventListener('scroll', updateBackToTop, { passive: true });
+    updateBackToTop();
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  }
+
   const slides = qa('.lm-hero-slide');
   const dots = qa('.lm-hero-dots button');
   let slideIndex = 0, lastSlideAction = 0;

@@ -6,5 +6,6 @@
   <div id="contato"><h2><?php esc_html_e( 'Fale conosco', 'lucymary' ); ?></h2><a href="mailto:davipereira@lucymary.com.br">davipereira@lucymary.com.br</a><a href="tel:+5588996839350">(88) 9 9683-9350</a><a href="tel:+5588999461753">(88) 9 9946-1753</a></div>
   <div id="lojas"><h2><?php esc_html_e( 'Nossa loja', 'lucymary' ); ?></h2><p><?php esc_html_e( 'Rua Frei Damião, nº 750, Lagoa Seca,', 'lucymary' ); ?><br><?php esc_html_e( 'Juazeiro do Norte – CE, CEP 63040-300.', 'lucymary' ); ?></p><p><?php esc_html_e( 'Segunda a sexta: 9h às 18h.', 'lucymary' ); ?><br><?php esc_html_e( 'Sábado: 9h às 14h.', 'lucymary' ); ?></p></div>
 </div><div class="lm-footer-bottom"><div class="lm-shell"><?php esc_html_e( 'As imagens das joias são ampliadas para melhor visualização e não correspondem ao tamanho real.', 'lucymary' ); ?></div></div></footer>
+<button class="lm-back-to-top" type="button" aria-label="<?php esc_attr_e( 'Voltar ao topo', 'lucymary' ); ?>" title="<?php esc_attr_e( 'Voltar ao topo', 'lucymary' ); ?>"><?php echo lucymary_icon( 'chevron-up', 22 ); ?></button>
 <?php wp_footer(); ?>
 </body></html>

@@ -125,6 +125,7 @@ return array(
 		'Ver produtos' => 'View products',
 		'Ver todos os produtos' => 'View all products',
 		'Ver todos os resultados' => 'View all results',
+		'Voltar ao topo' => 'Back to top',
 	),
 	'es' => array(
 		'%d estrelas' => '%d estrellas',
@@ -248,5 +249,6 @@ return array(
 		'Ver produtos' => 'Ver productos',
 		'Ver todos os produtos' => 'Ver todos los productos',
 		'Ver todos os resultados' => 'Ver todos los resultados',
+		'Voltar ao topo' => 'Volver arriba',
 	),
 );

@@ -16,7 +16,6 @@ while ( have_posts() ) : the_post();
 		<div class="lm-product-detail">
 			<div class="lm-product-gallery"><?php woocommerce_show_product_images(); ?></div>
 			<div class="lm-product-info">
-				<?php if ( $category ) : ?><a class="lm-eyebrow" href="<?php echo esc_url( get_term_link( $category ) ); ?>"><?php echo esc_html( $category->name ); ?></a><?php endif; ?>
 				<h1><?php the_title(); ?></h1>
 				<?php if ( $product->get_short_description() ) : ?><div class="lm-short-description"><?php echo wp_kses_post( wpautop( $product->get_short_description() ) ); ?></div><?php endif; ?>
 				<div class="lm-main-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></div>

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.1.3' );
+define( 'LUCYMARY_VERSION', '0.1.4' );
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
 function lucymary_ui_translation( $translated, $original, $domain ) {
@@ -147,6 +147,7 @@ function lucymary_icon( $name, $size = 20 ) {
 		'phone' => '<path d="M7 3H4a2 2 0 0 0-2 2c0 9.4 7.6 17 17 17a2 2 0 0 0 2-2v-3l-5-2-2 2a15 15 0 0 1-7-7l2-2-2-5Z"/>',
 		'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
 		'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
+		'chevron-up' => '<path d="m6 15 6-6 6 6"/>',
 		'ruler' => '<path d="m21 7-4-4L3 17l4 4L21 7Z"/><path d="m15 5 2 2m-5 1 2 2m-5 1 2 2m-5 1 2 2"/>',
 		'truck' => '<path d="M3 6h11v11H3V6Zm11 4h4l3 3v4h-7v-7Z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
 	);

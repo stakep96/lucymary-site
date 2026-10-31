@@ -5,7 +5,7 @@ O diretório [`lucymary/`](lucymary/) é um **tema clássico WordPress** criado 
 ## Páginas e recursos incluídos
 
 - Home com os três banners da marca, carrossel de categorias e produtos recentes.
-- Cabeçalho desktop e mobile, menu lateral animado, busca de produtos, sacola lateral e rodapé.
+- Cabeçalho desktop e mobile com a faixa da logo fixa ao rolar, menu lateral animado, busca de produtos, sacola lateral, botão de voltar ao topo e rodapé.
 - Loja e categorias com produtos, ordenação, paginação e filtros de preço, avaliação e atributos **globais** `pa_cor`/`pa_cores` e `pa_material`, quando existirem.
 - Produto com galeria, descrição curta abaixo do título, preço/estoque do WooCommerce, atributos e variações, seletor visual de aro, botão **Adicionar à sacola**, **Comprar agora** e estimativa de frete por CEP.
 - Busca, páginas gerais, carrinho, checkout e minha conta. As páginas comerciais mantêm os formulários, validações, totais e métodos de pagamento do WooCommerce.
@@ -19,13 +19,13 @@ O tema inclui um seletor compacto no cabeçalho desktop e outro no menu mobile. 
 3. Teste a troca de idioma em produto simples e variável, categoria, busca, sacola e checkout. Confirme o carrinho e o Mercado Pago em cada idioma. O seletor troca o idioma da página atual; preços e estoque continuam no mesmo WooCommerce e a moeda permanece a configurada na loja.
 4. Configure o cache público por idioma e mantenha carrinho, conta e checkout fora do cache compartilhado. Limpe o cache do WordPress/Hostinger após instalar ou atualizar o tema e as traduções.
 
-Revise os resultados da busca e as respostas de plugins via AJAX em cada idioma, porque podem trazer conteúdo do WooCommerce fora dos templates do tema. A versão 0.1.3 traduz a interface própria do tema, mas, sem configurar e revisar as traduções do conteúdo no WordPress, a loja ainda não está totalmente trilíngue. Se uma tradução antiga ficar visível depois da atualização, limpe o cache do WordPress e da Hostinger.
+Revise os resultados da busca e as respostas de plugins via AJAX em cada idioma, porque podem trazer conteúdo do WooCommerce fora dos templates do tema. O tema traduz sua interface própria, mas, sem configurar e revisar as traduções do conteúdo no WordPress, a loja ainda não está totalmente trilíngue. Se uma tradução antiga ficar visível depois da atualização, limpe o cache do WordPress e da Hostinger.
 
 ## Instalação segura
 
 1. Faça um backup de arquivos e banco do WordPress. Não substitua a instalação de produção como primeiro teste.
 2. Instale o WooCommerce e confirme que as páginas **Loja**, **Carrinho**, **Finalizar compra** e **Minha conta** estão atribuídas em WooCommerce → Configurações → Avançado.
-3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.1.3.zip`).
+3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.1.4.zip`).
 4. Em um ambiente de teste, vá a Aparência → Temas → Adicionar novo → Enviar tema e instale esse ZIP. Ele contém a pasta `lucymary/` no nível correto.
 5. Com ShopEngine ainda ativo, templates do próprio ShopEngine podem continuar sobrepondo os do tema. Desative **somente o ShopEngine no ambiente de teste** após conferir suas seis páginas ativas. Teste home, loja, categoria, produto simples e variável, busca, carrinho, cupom, CEP, checkout e minha conta.
 6. Valide o plugin Mercado Pago Checkout Pro no checkout real do WooCommerce com o procedimento de teste autorizado da loja. O botão **Comprar agora** adiciona o produto e redireciona para o checkout do WooCommerce; o tema não confirma pagamento por URL de retorno nem cria pedidos diretamente.

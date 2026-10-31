@@ -28,11 +28,11 @@ $categories = lucymary_ordered_categories( false );
       <button class="lm-icon-button lm-bag-button" type="button" data-lm-open="cart" aria-label="<?php esc_attr_e( 'Abrir sacola', 'lucymary' ); ?>" aria-controls="lm-cart-drawer" aria-expanded="false"><?php echo lucymary_icon( 'handbag', 22 ); ?><span class="lm-cart-count"><?php echo function_exists( 'WC' ) && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0; ?></span></button>
     </div>
   </div>
-  <nav class="lm-shell lm-category-nav" aria-label="<?php esc_attr_e( 'Categorias principais', 'lucymary' ); ?>">
+</header>
+<nav class="lm-shell lm-category-nav" aria-label="<?php esc_attr_e( 'Categorias principais', 'lucymary' ); ?>">
     <?php foreach ( $categories as $category ) : ?><a href="<?php echo esc_url( get_term_link( $category ) ); ?>"><?php echo esc_html( $category->name ); ?></a><?php endforeach; ?>
     <a href="<?php echo esc_url( $shop_url ); ?>"><?php esc_html_e( 'Todos', 'lucymary' ); ?></a>
-  </nav>
-</header>
+</nav>
 
 <div class="lm-overlay lm-menu-overlay" id="lm-mobile-menu" data-lm-overlay="menu" aria-hidden="true">
   <button type="button" class="lm-overlay-backdrop" data-lm-close aria-label="<?php esc_attr_e( 'Fechar menu', 'lucymary' ); ?>"></button>
