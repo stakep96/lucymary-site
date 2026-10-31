@@ -2,6 +2,7 @@
   'use strict';
   const q = (selector, root = document) => root.querySelector(selector);
   const qa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const copy = typeof lucymaryTheme !== 'undefined' ? lucymaryTheme.strings || {} : {};
   const overlays = Object.fromEntries(qa('[data-lm-overlay]').map((el) => [el.dataset.lmOverlay, el]));
   let activeOverlay = null;
   let lastTrigger = null;
@@ -108,7 +109,7 @@
     searchInput.addEventListener('input', () => {
       clearTimeout(timer); controller?.abort(); resultBox.replaceChildren();
       const value = searchInput.value.trim();
-      prompt.textContent = value.length < 2 ? 'Digite ao menos duas letras para encontrar produtos.' : 'Buscando produtos…';
+      prompt.textContent = value.length < 2 ? copy.searchMin : copy.searchLoading;
       if (value.length < 2) return;
       timer = setTimeout(async () => {
         controller = new AbortController();
@@ -118,11 +119,11 @@
           const data = await response.json();
           if (searchInput.value.trim() !== value) return;
           const items = data.success && Array.isArray(data.data) ? data.data : [];
-          renderResults(items); prompt.textContent = items.length ? 'Produtos' : 'Nenhum produto encontrado.';
-        } catch (error) { if (error.name !== 'AbortError') prompt.textContent = 'Não foi possível buscar agora.'; }
+          renderResults(items); prompt.textContent = items.length ? copy.searchResults : copy.searchEmpty;
+        } catch (error) { if (error.name !== 'AbortError') prompt.textContent = copy.searchError; }
       }, 350);
     });
-    q('.lm-search-form')?.addEventListener('reset', () => { clearTimeout(timer); controller?.abort(); renderResults([]); prompt.textContent = 'Digite ao menos duas letras para encontrar produtos.'; });
+    q('.lm-search-form')?.addEventListener('reset', () => { clearTimeout(timer); controller?.abort(); renderResults([]); prompt.textContent = copy.searchMin; });
     q('.lm-search-submit')?.addEventListener('click', () => q('.lm-search-form')?.requestSubmit());
   }
 
@@ -133,7 +134,9 @@
       let min = Number(inputs[0].value), max = Number(inputs[1].value);
       if (min > max) { if (changed === inputs[0]) min = max; else max = min; inputs[0].value = min; inputs[1].value = max; }
       fill.style.left = `${100 * min / maximum}%`; fill.style.right = `${100 * (1 - max / maximum)}%`;
-      caption.textContent = `R$ ${min.toLocaleString('pt-BR')} – R$ ${max.toLocaleString('pt-BR')}`;
+      const format = (value) => new Intl.NumberFormat(document.documentElement.lang || 'pt-BR', { maximumFractionDigits: 0 }).format(value);
+      const symbol = typeof lucymaryTheme !== 'undefined' ? lucymaryTheme.currencySymbol : 'R$';
+      caption.textContent = `${symbol} ${format(min)} – ${symbol} ${format(max)}`;
     }
     inputs.forEach((input) => input.addEventListener('input', () => update(input))); update();
   });
@@ -144,7 +147,7 @@
     const rows = qa('tr', table).filter((row) => q('select', row));
     const insertBefore = table;
     rows.forEach((row) => {
-      const select = q('select', row), label = q('label', row)?.textContent?.trim() || 'Opção';
+      const select = q('select', row), label = q('label', row)?.textContent?.trim() || copy.option || 'Opção';
       const options = qa('option', select).filter((option) => option.value);
       if (!options.length) return;
       const wrap = document.createElement('div'); wrap.className = 'lm-attribute-choice';
@@ -171,18 +174,18 @@
       let buttons, track;
       if (ring) {
         const selector = document.createElement('div'); selector.className = 'lm-ring-selector';
-        const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '‹'; prev.setAttribute('aria-label', 'Aro anterior');
-        const next = document.createElement('button'); next.type = 'button'; next.textContent = '›'; next.setAttribute('aria-label', 'Próximo aro');
+        const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '‹'; prev.setAttribute('aria-label', copy.ringPrevious);
+        const next = document.createElement('button'); next.type = 'button'; next.textContent = '›'; next.setAttribute('aria-label', copy.ringNext);
         track = document.createElement('div'); track.className = 'lm-ring-track';
         function advance(direction) { for (let i = 1; i <= options.length; i++) { const option = options[(focusIndex + direction * i + options.length * 2) % options.length]; if (!option.disabled) { choose(option); break; } } }
         prev.addEventListener('click', () => advance(-1)); next.addEventListener('click', () => advance(1));
         let touchX = null; track.addEventListener('touchstart', (event) => { touchX = event.touches[0].clientX; }, { passive: true });
         track.addEventListener('touchend', (event) => { if (touchX === null) return; const dx = event.changedTouches[0].clientX - touchX; if (Math.abs(dx) > 30) advance(dx > 0 ? -1 : 1); touchX = null; }, { passive: true });
         selector.append(prev, track, next); wrap.appendChild(selector);
-        const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.textContent = '♧  Tabela de medidas';
+        const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.textContent = `♧  ${copy.ringGuide}`;
         const dialog = document.createElement('dialog'); dialog.className = 'lm-size-dialog';
-        const close = document.createElement('button'); close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', 'Fechar'); close.addEventListener('click', () => dialog.close());
-        const title = document.createElement('h2'); title.textContent = 'Tabela de medidas'; const text = document.createElement('p'); text.textContent = 'A tabela oficial de aros da LucyMary será adicionada aqui em breve.';
+        const close = document.createElement('button'); close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', copy.ringClose); close.addEventListener('click', () => dialog.close());
+        const title = document.createElement('h2'); title.textContent = copy.ringGuide; const text = document.createElement('p'); text.textContent = copy.ringDialogText;
         dialog.append(close, title, text); guide.addEventListener('click', () => dialog.showModal()); wrap.append(guide, dialog);
       } else { buttons = document.createElement('div'); buttons.className = 'lm-attribute-buttons'; wrap.appendChild(buttons); }
       insertBefore.parentNode.insertBefore(wrap, insertBefore); row.classList.add('lm-enhanced-row');
@@ -216,22 +219,22 @@
     event.preventDefault();
     const target = q('.lm-shipping-response', form.parentElement), button = q('button', form);
     const postcode = q('input[name=postcode]', form).value.replace(/\D/g, '');
-    if (postcode.length !== 8) { target.textContent = 'Informe um CEP com 8 dígitos.'; return; }
+    if (postcode.length !== 8) { target.textContent = copy.shippingInvalidPostcode; return; }
     const productVariationForm = q('form.variations_form');
     const variation = productVariationForm ? q('input.variation_id', productVariationForm)?.value : '';
-    if (productVariationForm && Number(variation) < 1) { target.textContent = 'Escolha as opções do produto antes de calcular o frete.'; return; }
+    if (productVariationForm && Number(variation) < 1) { target.textContent = copy.shippingChooseOption; return; }
     const id = variation || form.dataset.productId;
     const quantity = q('form.cart input.qty')?.value || '1';
-    button.disabled = true; target.textContent = 'Calculando frete…';
+    button.disabled = true; target.textContent = copy.shippingLoading;
     try {
       const body = new URLSearchParams({ action: 'lucymary_shipping', nonce: lucymaryTheme.shippingNonce, product_id: id, quantity, postcode });
       const response = await fetch(lucymaryTheme.ajaxUrl, { method: 'POST', body, credentials: 'same-origin' });
       const data = await response.json();
-      if (!data.success) throw new Error(data.data?.message || 'Não foi possível calcular o frete.');
+      if (!data.success) throw new Error(copy.shippingError);
       target.replaceChildren();
-      if (!data.data.rates.length) { target.textContent = 'Nenhuma modalidade de frete disponível para este CEP.'; return; }
+      if (!data.data.rates.length) { target.textContent = copy.shippingNoRates; return; }
       data.data.rates.forEach((rate) => { const row = document.createElement('div'), name = document.createElement('span'), cost = document.createElement('strong'); name.textContent = rate.label; cost.textContent = rate.cost; row.append(name, cost); target.appendChild(row); });
-    } catch (error) { target.textContent = error.message || 'Não foi possível calcular o frete.'; }
+    } catch (error) { target.textContent = error.message || copy.shippingError; }
     finally { button.disabled = false; }
   }));
 })();

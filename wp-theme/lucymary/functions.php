@@ -9,7 +9,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.1.2' );
+define( 'LUCYMARY_VERSION', '0.1.3' );
+
+/** Translate only theme interface strings; catalog content remains in WordPress. */
+function lucymary_ui_translation( $translated, $original, $domain ) {
+	if ( 'lucymary' !== $domain ) { return $translated; }
+	$language = substr( get_locale(), 0, 2 );
+	if ( ! in_array( $language, array( 'en', 'es' ), true ) ) { return $translated; }
+	static $messages = null;
+	if ( null === $messages ) { $messages = require get_template_directory() . '/languages/ui.php'; }
+	return $messages[ $language ][ $original ] ?? $translated;
+}
+add_filter( 'gettext', 'lucymary_ui_translation', 1000, 3 );
 
 function lucymary_setup() {
 	load_theme_textdomain( 'lucymary', get_template_directory() . '/languages' );
@@ -28,7 +39,29 @@ function lucymary_assets() {
 	$base = get_template_directory_uri();
 	wp_enqueue_style( 'lucymary-theme', $base . '/assets/css/theme.css', array(), LUCYMARY_VERSION );
 	wp_enqueue_script( 'lucymary-theme', $base . '/assets/js/theme.js', array(), LUCYMARY_VERSION, true );
-	wp_localize_script( 'lucymary-theme', 'lucymaryTheme', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ), 'shippingNonce' => wp_create_nonce( 'lucymary_shipping' ) ) );
+	wp_localize_script( 'lucymary-theme', 'lucymaryTheme', array(
+		'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+		'shippingNonce' => wp_create_nonce( 'lucymary_shipping' ),
+		'currencySymbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : 'R$',
+		'strings' => array(
+			'searchMin' => __( 'Digite ao menos duas letras para encontrar produtos.', 'lucymary' ),
+			'searchLoading' => __( 'Buscando produtos…', 'lucymary' ),
+			'searchResults' => __( 'Produtos', 'lucymary' ),
+			'searchEmpty' => __( 'Nenhum produto encontrado.', 'lucymary' ),
+			'searchError' => __( 'Não foi possível buscar agora.', 'lucymary' ),
+			'option' => __( 'Opção', 'lucymary' ),
+			'ringPrevious' => __( 'Aro anterior', 'lucymary' ),
+			'ringNext' => __( 'Próximo aro', 'lucymary' ),
+			'ringGuide' => __( 'Tabela de medidas', 'lucymary' ),
+			'ringClose' => __( 'Fechar', 'lucymary' ),
+			'ringDialogText' => __( 'A tabela oficial de aros da LucyMary será adicionada aqui em breve.', 'lucymary' ),
+			'shippingInvalidPostcode' => __( 'Informe um CEP com 8 dígitos.', 'lucymary' ),
+			'shippingChooseOption' => __( 'Escolha as opções do produto antes de calcular o frete.', 'lucymary' ),
+			'shippingLoading' => __( 'Calculando frete…', 'lucymary' ),
+			'shippingError' => __( 'Não foi possível calcular o frete.', 'lucymary' ),
+			'shippingNoRates' => __( 'Nenhuma modalidade de frete disponível para este CEP.', 'lucymary' ),
+		),
+	) );
 	if ( function_exists( 'is_product' ) && is_product() ) {
 		wp_enqueue_script( 'wc-add-to-cart-variation' );
 	}

@@ -12,20 +12,20 @@ O diretório [`lucymary/`](lucymary/) é um **tema clássico WordPress** criado 
 
 ## Idiomas: português, inglês e espanhol
 
-O tema inclui um seletor compacto no cabeçalho desktop e outro no menu mobile. Eles usam as URLs da página atual fornecidas pelo TranslatePress e só aparecem quando o plugin estiver ativo com pelo menos dois idiomas publicados. O tema **não traduz produtos sozinho** nem cria cópias do catálogo.
+O tema inclui um seletor compacto no cabeçalho desktop e outro no menu mobile. Eles usam as URLs da página atual fornecidas pelo TranslatePress e só aparecem quando o plugin estiver ativo com pelo menos dois idiomas publicados. A partir da versão 0.1.3, os textos fixos dos templates e os avisos gerados pelo JavaScript do tema têm traduções próprias para inglês e espanhol em `lucymary/languages/ui.php`. O idioma é o da página selecionada. O tema **não traduz produtos sozinho** nem cria cópias do catálogo.
 
 1. No WordPress de teste, instale o TranslatePress e configure **Português (Brasil)** como idioma original, além de **English** e **Español**. Para publicar os três ao mesmo tempo, o complemento **Multiple Languages** de uma licença premium é necessário; a versão gratuita permite somente o idioma original e mais um.
-2. Desative o seletor flutuante do plugin para não duplicar o seletor integrado ao tema. Revise manualmente as traduções de títulos, descrições, categorias, atributos, páginas institucionais, frete, carrinho, checkout, meios de pagamento e e-mails.
+2. Desative o seletor flutuante do plugin para não duplicar o seletor integrado ao tema. No editor do TranslatePress, traduza títulos e descrições dos produtos, nomes de categorias, atributos, páginas institucionais, textos de plugins de frete e pagamento e e-mails. A tradução automática exige configuração própria no plugin; somente adicionar o idioma ao seletor não traduz esse conteúdo. Textos presentes dentro das imagens dos banners exigem imagens alternativas ou outra arte por idioma.
 3. Teste a troca de idioma em produto simples e variável, categoria, busca, sacola e checkout. Confirme o carrinho e o Mercado Pago em cada idioma. O seletor troca o idioma da página atual; preços e estoque continuam no mesmo WooCommerce e a moeda permanece a configurada na loja.
 4. Configure o cache público por idioma e mantenha carrinho, conta e checkout fora do cache compartilhado. Limpe o cache do WordPress/Hostinger após instalar ou atualizar o tema e as traduções.
 
-Os textos dinâmicos gerados pelo JavaScript do tema e respostas AJAX devem ser revisados no teste multilíngue após a instalação do plugin. Sem TranslatePress e as traduções configuradas, esta versão não promete uma loja trilíngue pronta para venda.
+Revise os resultados da busca e as respostas de plugins via AJAX em cada idioma, porque podem trazer conteúdo do WooCommerce fora dos templates do tema. A versão 0.1.3 traduz a interface própria do tema, mas, sem configurar e revisar as traduções do conteúdo no WordPress, a loja ainda não está totalmente trilíngue. Se uma tradução antiga ficar visível depois da atualização, limpe o cache do WordPress e da Hostinger.
 
 ## Instalação segura
 
 1. Faça um backup de arquivos e banco do WordPress. Não substitua a instalação de produção como primeiro teste.
 2. Instale o WooCommerce e confirme que as páginas **Loja**, **Carrinho**, **Finalizar compra** e **Minha conta** estão atribuídas em WooCommerce → Configurações → Avançado.
-3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.1.2.zip`).
+3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.1.3.zip`).
 4. Em um ambiente de teste, vá a Aparência → Temas → Adicionar novo → Enviar tema e instale esse ZIP. Ele contém a pasta `lucymary/` no nível correto.
 5. Com ShopEngine ainda ativo, templates do próprio ShopEngine podem continuar sobrepondo os do tema. Desative **somente o ShopEngine no ambiente de teste** após conferir suas seis páginas ativas. Teste home, loja, categoria, produto simples e variável, busca, carrinho, cupom, CEP, checkout e minha conta.
 6. Valide o plugin Mercado Pago Checkout Pro no checkout real do WooCommerce com o procedimento de teste autorizado da loja. O botão **Comprar agora** adiciona o produto e redireciona para o checkout do WooCommerce; o tema não confirma pagamento por URL de retorno nem cria pedidos diretamente.
