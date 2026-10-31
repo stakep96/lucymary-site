@@ -45,10 +45,16 @@
   }));
 
   const backToTop = q('.lm-back-to-top');
+  const header = q('.lm-header');
+  const categoryNav = q('.lm-category-nav');
+  const updateScrollUi = () => {
+    header?.classList.toggle('is-scrolled', window.scrollY > (categoryNav?.offsetHeight || 0) + 2);
+    backToTop?.classList.toggle('is-visible', window.scrollY > 450);
+  };
+  window.addEventListener('scroll', updateScrollUi, { passive: true });
+  window.addEventListener('resize', updateScrollUi, { passive: true });
+  updateScrollUi();
   if (backToTop) {
-    const updateBackToTop = () => backToTop.classList.toggle('is-visible', window.scrollY > 450);
-    window.addEventListener('scroll', updateBackToTop, { passive: true });
-    updateBackToTop();
     backToTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     });

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.1.4' );
+define( 'LUCYMARY_VERSION', '0.1.5' );
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
 function lucymary_ui_translation( $translated, $original, $domain ) {
