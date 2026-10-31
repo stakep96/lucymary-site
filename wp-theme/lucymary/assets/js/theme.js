@@ -31,10 +31,14 @@
   }
   qa('[data-lm-open]').forEach((button) => button.addEventListener('click', () => openOverlay(button.dataset.lmOpen, button)));
   qa('[data-lm-close]').forEach((button) => button.addEventListener('click', closeOverlay));
-  qa('[data-lm-language-select]').forEach((select) => select.addEventListener('change', () => {
-    if (select.value) window.location.assign(select.value);
-  }));
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeOverlay(); });
+  document.addEventListener('click', (event) => {
+    qa('.lm-language-switcher[open]').forEach((switcher) => {
+      if (!switcher.contains(event.target)) switcher.open = false;
+    });
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') { closeOverlay(); qa('.lm-language-switcher[open]').forEach((switcher) => { switcher.open = false; }); }
+  });
   qa('.lm-overlay').forEach((overlay) => overlay.addEventListener('keydown', (event) => {
     if (event.key !== 'Tab') return;
     const focusables = qa('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])', overlay).filter((el) => !el.disabled && el.getClientRects().length);
@@ -170,7 +174,7 @@
       const heading = document.createElement('strong'); heading.className = 'lm-attribute-label'; heading.textContent = label;
       const chosen = document.createElement('span'); chosen.style.cssText = 'margin-left:8px;color:var(--lm-wine);font-weight:400'; chosen.textContent = select.selectedOptions[0]?.value ? select.selectedOptions[0].textContent : '';
       heading.appendChild(chosen); wrap.appendChild(heading);
-      const ring = /aro|tamanho/i.test(label) && options.length > 7;
+      const ring = /aro|tamanho|ring size/i.test(label) && options.length > 7;
       function choose(option) { select.value = option.value; select.dispatchEvent(new Event('change', { bubbles: true })); render(); }
       let focusIndex = Math.max(0, options.findIndex((option) => option.value === select.value));
       function render() {
@@ -180,7 +184,7 @@
           track.replaceChildren();
           for (let offset = -3; offset <= 3; offset++) {
             const option = options[(focusIndex + offset + options.length) % options.length];
-            const button = document.createElement('button'); button.type = 'button'; button.textContent = option.textContent; button.disabled = option.disabled; button.setAttribute('aria-label', `Aro ${option.textContent}`); button.setAttribute('aria-pressed', String(option.value === select.value)); button.addEventListener('click', () => choose(option)); track.appendChild(button);
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = option.textContent; button.disabled = option.disabled; button.setAttribute('aria-label', `${label} ${option.textContent}`); button.setAttribute('aria-pressed', String(option.value === select.value)); button.addEventListener('click', () => choose(option)); track.appendChild(button);
           }
         } else {
           buttons.replaceChildren();
@@ -198,7 +202,7 @@
         let touchX = null; track.addEventListener('touchstart', (event) => { touchX = event.touches[0].clientX; }, { passive: true });
         track.addEventListener('touchend', (event) => { if (touchX === null) return; const dx = event.changedTouches[0].clientX - touchX; if (Math.abs(dx) > 30) advance(dx > 0 ? -1 : 1); touchX = null; }, { passive: true });
         selector.append(prev, track, next); wrap.appendChild(selector);
-        const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.textContent = `♧  ${copy.ringGuide}`;
+        const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.innerHTML = lucymaryTheme.rulerIcon; guide.append(document.createTextNode(copy.ringGuide));
         const dialog = document.createElement('dialog'); dialog.className = 'lm-size-dialog';
         const close = document.createElement('button'); close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', copy.ringClose); close.addEventListener('click', () => dialog.close());
         const title = document.createElement('h2'); title.textContent = copy.ringGuide; const text = document.createElement('p'); text.textContent = copy.ringDialogText;
@@ -208,7 +212,7 @@
       select.addEventListener('change', () => {
         render();
         if (!ring) {
-          const ringSelect = rows.map((item) => q('select', item)).find((item) => item && /aro|tamanho/i.test(q('label', item.closest('tr'))?.textContent || ''));
+          const ringSelect = rows.map((item) => q('select', item)).find((item) => item && /aro|tamanho|ring size/i.test(q('label', item.closest('tr'))?.textContent || ''));
           if (ringSelect && !ringSelect.value) window.setTimeout(() => {
             const first = qa('option', ringSelect).find((option) => option.value && !option.disabled);
             if (first && !ringSelect.value) { ringSelect.value = first.value; ringSelect.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -226,6 +230,32 @@
       const shipping = q('.lm-shipping-form'); if (shipping) shipping.dataset.variationId = variation.variation_id;
     }).on('reset_data', () => { const shipping = q('.lm-shipping-form'); if (shipping) shipping.dataset.variationId = ''; const price = q('.lm-main-price'); if (price && initialPrice) price.innerHTML = initialPrice; });
   }
+  const selectionDialog = q('.lm-selection-dialog');
+  function missingVariation(form) {
+    if (!form?.matches('.variations_form')) return null;
+    if (qa('.variations select', form).some((select) => !select.value)) return copy.chooseProductOptions;
+    if (!Number(q('input.variation_id', form)?.value)) return copy.waitForVariation;
+    return null;
+  }
+  function showSelection(message) {
+    if (!selectionDialog) return;
+    q('#lm-selection-copy', selectionDialog).textContent = message;
+    if (!selectionDialog.open) selectionDialog.showModal();
+  }
+  qa('[data-lm-selection-close]', selectionDialog || document).forEach((button) => button.addEventListener('click', () => selectionDialog?.close()));
+  selectionDialog?.addEventListener('click', (event) => { if (event.target === selectionDialog) selectionDialog.close(); });
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('.lm-product-purchase button.single_add_to_cart_button, .lm-product-purchase button.lm-buy-now');
+    if (!button) return;
+    const message = missingVariation(button.closest('form.cart'));
+    if (!message) return;
+    event.preventDefault(); event.stopImmediatePropagation(); showSelection(message);
+  }, true);
+  document.addEventListener('submit', (event) => {
+    const message = missingVariation(event.target);
+    if (!message) return;
+    event.preventDefault(); event.stopImmediatePropagation(); showSelection(message);
+  }, true);
   qa('.lm-product-purchase form.cart').forEach((form) => form.addEventListener('submit', (event) => {
     const button = event.submitter;
     if (button?.matches('button.single_add_to_cart_button, button.lm-buy-now')) button.classList.add('is-loading');

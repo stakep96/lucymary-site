@@ -9,13 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.1.5' );
+define( 'LUCYMARY_VERSION', '0.2.0' );
+require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
 function lucymary_ui_translation( $translated, $original, $domain ) {
 	if ( 'lucymary' !== $domain ) { return $translated; }
-	$language = substr( get_locale(), 0, 2 );
-	if ( ! in_array( $language, array( 'en', 'es' ), true ) ) { return $translated; }
+	$language = lucymary_language();
+	if ( 'en' !== $language ) { return $translated; }
 	static $messages = null;
 	if ( null === $messages ) { $messages = require get_template_directory() . '/languages/ui.php'; }
 	return $messages[ $language ][ $original ] ?? $translated;
@@ -40,7 +41,7 @@ function lucymary_assets() {
 	wp_enqueue_style( 'lucymary-theme', $base . '/assets/css/theme.css', array(), LUCYMARY_VERSION );
 	wp_enqueue_script( 'lucymary-theme', $base . '/assets/js/theme.js', array(), LUCYMARY_VERSION, true );
 	wp_localize_script( 'lucymary-theme', 'lucymaryTheme', array(
-		'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+		'ajaxUrl' => 'en' === lucymary_language() ? add_query_arg( 'lm_lang', 'en', admin_url( 'admin-ajax.php' ) ) : admin_url( 'admin-ajax.php' ),
 		'shippingNonce' => wp_create_nonce( 'lucymary_shipping' ),
 		'currencySymbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : 'R$',
 		'strings' => array(
@@ -60,7 +61,10 @@ function lucymary_assets() {
 			'shippingLoading' => __( 'Calculando frete…', 'lucymary' ),
 			'shippingError' => __( 'Não foi possível calcular o frete.', 'lucymary' ),
 			'shippingNoRates' => __( 'Nenhuma modalidade de frete disponível para este CEP.', 'lucymary' ),
+			'chooseProductOptions' => __( 'Escolha as opções da peça para continuar.', 'lucymary' ),
+			'waitForVariation' => __( 'Aguarde a confirmação da opção selecionada e tente novamente.', 'lucymary' ),
 		),
+		'rulerIcon' => lucymary_icon( 'ruler', 17 ),
 	) );
 	if ( function_exists( 'is_product' ) && is_product() ) {
 		wp_enqueue_script( 'wc-add-to-cart-variation' );
@@ -73,35 +77,6 @@ add_action( 'wp_enqueue_scripts', 'lucymary_assets' );
 
 function lucymary_asset( $path ) {
 	return get_template_directory_uri() . '/assets/' . ltrim( $path, '/' );
-}
-
-/** Use only the languages and page URLs published by TranslatePress. */
-function lucymary_language_switcher( $placement = 'header' ) {
-	if ( ! function_exists( 'trp_custom_language_switcher' ) || ! apply_filters( 'trp_allow_tp_to_run', true ) ) {
-		return;
-	}
-	$languages = trp_custom_language_switcher();
-	if ( ! is_array( $languages ) || count( $languages ) < 2 ) {
-		return;
-	}
-	$current = get_locale();
-	$mobile = 'menu' === $placement;
-	?>
-	<div class="lm-language-switcher lm-language-switcher--<?php echo esc_attr( $mobile ? 'menu' : 'header' ); ?>">
-		<label for="lm-language-<?php echo esc_attr( $mobile ? 'menu' : 'header' ); ?>"><?php esc_html_e( 'Idioma', 'lucymary' ); ?></label>
-		<select id="lm-language-<?php echo esc_attr( $mobile ? 'menu' : 'header' ); ?>" data-lm-language-select data-no-translation aria-label="<?php esc_attr_e( 'Selecionar idioma', 'lucymary' ); ?>">
-			<?php foreach ( $languages as $language ) :
-				$code = isset( $language['language_code'] ) ? (string) $language['language_code'] : '';
-				$url = isset( $language['current_page_url'] ) ? (string) $language['current_page_url'] : '';
-				if ( ! $code || ! $url ) { continue; }
-				$name = isset( $language['language_name'] ) ? (string) $language['language_name'] : $code;
-				$label = $mobile ? $name : strtoupper( substr( $code, 0, 2 ) );
-				?>
-				<option value="<?php echo esc_url( $url ); ?>" <?php selected( $code, $current ); ?>><?php echo esc_html( $label ); ?></option>
-			<?php endforeach; ?>
-		</select>
-	</div>
-	<?php
 }
 
 function lucymary_shop_url() {
@@ -147,6 +122,7 @@ function lucymary_icon( $name, $size = 20 ) {
 		'phone' => '<path d="M7 3H4a2 2 0 0 0-2 2c0 9.4 7.6 17 17 17a2 2 0 0 0 2-2v-3l-5-2-2 2a15 15 0 0 1-7-7l2-2-2-5Z"/>',
 		'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
 		'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
+		'chevron-down' => '<path d="m6 9 6 6 6-6"/>',
 		'chevron-up' => '<path d="m6 15 6-6 6 6"/>',
 		'ruler' => '<path d="m21 7-4-4L3 17l4 4L21 7Z"/><path d="m15 5 2 2m-5 1 2 2m-5 1 2 2m-5 1 2 2"/>',
 		'truck' => '<path d="M3 6h11v11H3V6Zm11 4h4l3 3v4h-7v-7Z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
