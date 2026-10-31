@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.1.0' );
+define( 'LUCYMARY_VERSION', '0.1.1' );
 
 function lucymary_setup() {
 	load_theme_textdomain( 'lucymary', get_template_directory() . '/languages' );
@@ -17,7 +17,6 @@ function lucymary_setup() {
 	add_theme_support( 'post-thumbnails' );
 	add_theme_support( 'custom-logo', array( 'height' => 91, 'width' => 220, 'flex-height' => true, 'flex-width' => true ) );
 	add_theme_support( 'woocommerce' );
-	add_theme_support( 'wc-product-gallery-zoom' );
 	add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );
 	register_nav_menus( array( 'institutional' => __( 'Links institucionais', 'lucymary' ), 'footer' => __( 'Rodapé', 'lucymary' ) ) );
