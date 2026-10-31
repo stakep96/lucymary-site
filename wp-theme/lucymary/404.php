@@ -1,0 +1,1 @@
+<?php get_header(); ?><div class="lm-shell lm-content-page lm-state"><h1>Página não encontrada</h1><p>O endereço pode ter mudado. Explore as peças LucyMary.</p><a href="<?php echo esc_url( lucymary_shop_url() ); ?>">Ver produtos</a></div><?php get_footer(); ?>

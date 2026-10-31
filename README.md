@@ -1,6 +1,8 @@
 # LucyMary Headless Storefront
 
-Base da nova vitrine LucyMary, com **Next.js App Router, TypeScript e Tailwind CSS**. O WordPress/WooCommerce é a fonte oficial de produtos, preços, estoque, carrinho e cupons; clientes, pedidos e pagamentos continuam no plano das próximas etapas. O catálogo usa leituras públicas da Store API e o carrinho usa os endpoints de sessão da mesma API. Nenhum checkout, pedido ou pagamento foi implementado.
+Base da nova vitrine LucyMary, com **Next.js App Router, TypeScript e Tailwind CSS**. O WordPress/WooCommerce é a fonte oficial de produtos, preços, estoque, carrinho e cupons; clientes, pedidos e pagamentos continuam no plano das próximas etapas. O catálogo usa leituras públicas da Store API e o carrinho usa os endpoints de sessão da mesma API. Nenhum checkout, pedido ou pagamento foi implementado no frontend Next.js.
+
+Uma versão local da identidade visual como **tema WordPress + WooCommerce** está em [`wp-theme/lucymary`](wp-theme/lucymary/). A instalação, o pacote ZIP e os limites de validação estão documentados em [`wp-theme/README.md`](wp-theme/README.md). O tema não altera a loja de produção automaticamente.
 
 ## Estrutura
 

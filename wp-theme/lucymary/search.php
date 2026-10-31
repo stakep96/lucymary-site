@@ -1,0 +1,5 @@
+<?php get_header(); ?>
+<div class="lm-shell lm-content-page"><nav class="lm-breadcrumb"><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Início</a> / Busca</nav><h1>Resultados para “<?php echo esc_html( get_search_query() ); ?>”</h1>
+<form role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" class="lm-page-search"><input name="s" type="search" value="<?php echo esc_attr( get_search_query() ); ?>" aria-label="Pesquisar produtos"><input type="hidden" name="post_type" value="product"><button type="submit">Buscar</button></form>
+<?php if ( have_posts() && function_exists( 'wc_get_product' ) ) : ?><div class="lm-product-grid"><?php while ( have_posts() ) : the_post(); $product = wc_get_product( get_the_ID() ); if ( $product ) { lucymary_product_card( $product ); } endwhile; ?></div><?php the_posts_pagination(); else : ?><div class="lm-state"><h2>Nenhum produto encontrado</h2><p>Tente buscar por outro nome ou coleção.</p></div><?php endif; ?></div>
+<?php get_footer(); ?>
