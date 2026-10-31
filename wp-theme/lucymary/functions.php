@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.1' );
+define( 'LUCYMARY_VERSION', '0.2.2' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -53,6 +53,7 @@ function lucymary_assets() {
 	wp_localize_script( 'lucymary-theme', 'lucymaryTheme', array(
 		'ajaxUrl' => 'en' === lucymary_language() ? add_query_arg( 'lm_lang', 'en', admin_url( 'admin-ajax.php' ) ) : admin_url( 'admin-ajax.php' ),
 		'shippingNonce' => wp_create_nonce( 'lucymary_shipping' ),
+		'cartNonce' => wp_create_nonce( 'lucymary_cart_quantity' ),
 		'currencySymbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : 'R$',
 		'strings' => array(
 			'searchMin' => __( 'Digite ao menos duas letras para encontrar produtos.', 'lucymary' ),
@@ -73,6 +74,9 @@ function lucymary_assets() {
 			'shippingNoRates' => __( 'Nenhuma modalidade de frete disponível para este CEP.', 'lucymary' ),
 			'chooseProductOptions' => __( 'Escolha as opções da peça para continuar.', 'lucymary' ),
 			'waitForVariation' => __( 'Aguarde a confirmação da opção selecionada e tente novamente.', 'lucymary' ),
+			'cartUpdateError' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ),
+			'cartQuantityDecrease' => __( 'Diminuir quantidade', 'lucymary' ),
+			'cartQuantityIncrease' => __( 'Aumentar quantidade', 'lucymary' ),
 		),
 		'rulerIcon' => lucymary_icon( 'ruler', 17 ),
 	) );
@@ -141,6 +145,7 @@ function lucymary_icon( $name, $size = 20 ) {
 		'chevron-up' => '<path d="m6 15 6-6 6 6"/>',
 		'ruler' => '<path d="m21 7-4-4L3 17l4 4L21 7Z"/><path d="m15 5 2 2m-5 1 2 2m-5 1 2 2m-5 1 2 2"/>',
 		'truck' => '<path d="M3 6h11v11H3V6Zm11 4h4l3 3v4h-7v-7Z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
+		'trash' => '<path d="M4 7h16M9 7V4h6v3m-9 0 1 14h10l1-14M10 11v6m4-6v6"/>',
 	);
 	if ( ! isset( $paths[ $name ] ) ) {
 		return '';
@@ -274,6 +279,39 @@ function lucymary_cart_fragments( $fragments ) {
 	return $fragments;
 }
 add_filter( 'woocommerce_add_to_cart_fragments', 'lucymary_cart_fragments' );
+
+/** Update only the current WooCommerce session cart from the side drawer. */
+function lucymary_cart_quantity() {
+	check_ajax_referer( 'lucymary_cart_quantity', 'nonce' );
+	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+		wp_send_json_error( array( 'message' => __( 'A sacola está indisponível no momento.', 'lucymary' ) ), 503 );
+	}
+	$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : '';
+	$quantity = isset( $_POST['quantity'] ) ? filter_var( wp_unslash( $_POST['quantity'] ), FILTER_VALIDATE_INT ) : false;
+	$item = WC()->cart->get_cart_item( $key );
+	if ( ! $item || false === $quantity || $quantity < 0 || $quantity > 99 ) {
+		wp_send_json_error( array( 'message' => __( 'Quantidade inválida.', 'lucymary' ) ), 400 );
+	}
+	$product = $item['data'];
+	if ( $quantity > 0 ) {
+		$max = $product->get_max_purchase_quantity();
+		$stock_id = $product->get_stock_managed_by_id();
+		$in_cart = WC()->cart->get_cart_item_quantities();
+		$stock_quantity = ( $in_cart[ $stock_id ] ?? 0 ) - (int) $item['quantity'] + $quantity;
+		if ( ! $product->is_purchasable() || ! $product->is_in_stock() || ( $product->is_sold_individually() && $quantity > 1 ) || ( $max > 0 && $quantity > $max ) || ! $product->has_enough_stock( $stock_quantity ) ) {
+			wp_send_json_error( array( 'message' => __( 'Essa quantidade não está disponível.', 'lucymary' ) ), 400 );
+		}
+	}
+	if ( ! WC()->cart->set_quantity( $key, $quantity, true ) ) {
+		wp_send_json_error( array( 'message' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ) ), 409 );
+	}
+	if ( 0 === $quantity ) { WC()->cart->calculate_totals(); }
+	ob_start();
+	woocommerce_mini_cart();
+	wp_send_json_success( array( 'html' => ob_get_clean(), 'count' => WC()->cart->get_cart_contents_count() ) );
+}
+add_action( 'wp_ajax_lucymary_cart_quantity', 'lucymary_cart_quantity' );
+add_action( 'wp_ajax_nopriv_lucymary_cart_quantity', 'lucymary_cart_quantity' );
 
 function lucymary_product_search() {
 	$query = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';

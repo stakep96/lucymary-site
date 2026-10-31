@@ -4,6 +4,20 @@ defined( 'ABSPATH' ) || exit;
 
 return array(
 	'en' => array(
+		'A sacola está indisponível no momento.' => 'The bag is temporarily unavailable.',
+		'Essa quantidade não está disponível.' => 'This quantity is not available.',
+		'Quantidade inválida.' => 'Invalid quantity.',
+		'Não foi possível atualizar a sacola. Tente novamente.' => 'The bag could not be updated. Try again.',
+		'Diminuir quantidade de %s' => 'Decrease quantity of %s',
+		'Aumentar quantidade de %s' => 'Increase quantity of %s',
+		'Diminuir quantidade' => 'Decrease quantity',
+		'Aumentar quantidade' => 'Increase quantity',
+		'Remover %s da sacola' => 'Remove %s from bag',
+		'Frete e descontos confirmados no carrinho.' => 'Shipping and discounts are confirmed in the cart.',
+		'Sua sacola está vazia.' => 'Your bag is empty.',
+		'Pagamento' => 'Payment',
+		'Escolha uma das formas disponíveis para concluir sua compra.' => 'Choose an available payment method to complete your purchase.',
+		'Resumo do pedido' => 'Order summary',
 		'%d estrelas' => '%d stars',
 		'A loja está indisponível.' => 'The store is temporarily unavailable.',
 		'A tabela oficial de aros da LucyMary será adicionada aqui em breve.' => 'The official LucyMary ring size chart will be added here soon.',

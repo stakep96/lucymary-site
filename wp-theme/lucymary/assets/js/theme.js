@@ -52,6 +52,65 @@
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }));
 
+  q('.lm-cart-overlay')?.addEventListener('click', async (event) => {
+    const control = event.target.closest('[data-lm-cart-qty], [data-lm-cart-remove]');
+    const miniCart = q('.lm-mini-cart-content');
+    if (!control || !miniCart.contains(control)) return;
+    event.preventDefault();
+    if (miniCart.dataset.updating === 'true') return;
+    const item = control.closest('.lm-mini-cart-item');
+    const current = Number(q('.lm-mini-cart-stepper span', item)?.textContent || 0);
+    const quantity = control.hasAttribute('data-lm-cart-remove') ? 0 : current + Number(control.dataset.lmCartQty);
+    const feedback = q('.lm-cart-feedback');
+    feedback.hidden = true;
+    miniCart.dataset.updating = 'true';
+    item.classList.add('is-updating');
+    try {
+      const body = new URLSearchParams({ action: 'lucymary_cart_quantity', nonce: lucymaryTheme.cartNonce, key: control.dataset.cartKey, quantity: String(quantity) });
+      const response = await fetch(lucymaryTheme.ajaxUrl, { method: 'POST', body, credentials: 'same-origin', cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.data?.message || copy.cartUpdateError);
+      miniCart.innerHTML = result.data.html;
+      qa('.lm-cart-count').forEach((count) => { count.textContent = result.data.count; });
+      q('.lm-cart-links')?.classList.toggle('is-empty', result.data.count === 0);
+      if (document.body.classList.contains('woocommerce-cart') || document.body.classList.contains('woocommerce-checkout')) window.location.reload();
+    } catch (error) {
+      feedback.textContent = error.message || copy.cartUpdateError;
+      feedback.hidden = false;
+    } finally {
+      delete miniCart.dataset.updating;
+      item.classList.remove('is-updating');
+    }
+  });
+
+  const cartForm = q('.woocommerce-cart-form');
+  if (cartForm) {
+    qa('.quantity input.qty', cartForm).forEach((input) => {
+      if (input.closest('.lm-cart-quantity')) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lm-cart-quantity';
+      input.parentNode.insertBefore(wrapper, input);
+      const minus = document.createElement('button');
+      const plus = document.createElement('button');
+      minus.type = plus.type = 'button';
+      minus.textContent = '−'; plus.textContent = '+';
+      minus.setAttribute('aria-label', copy.cartQuantityDecrease || 'Diminuir quantidade');
+      plus.setAttribute('aria-label', copy.cartQuantityIncrease || 'Aumentar quantidade');
+      wrapper.append(minus, input, plus);
+      const change = (direction) => {
+        const current = Number(input.value) || 0;
+        const minimum = Number(input.min) || 0;
+        const maximum = input.max ? Number(input.max) : Infinity;
+        const next = Math.min(maximum, Math.max(minimum, current + direction));
+        if (next === current) return;
+        input.value = String(next);
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      minus.addEventListener('click', () => change(-1));
+      plus.addEventListener('click', () => change(1));
+    });
+  }
+
   const backToTop = q('.lm-back-to-top');
   const header = q('.lm-header');
   const categoryNav = q('.lm-category-nav');
