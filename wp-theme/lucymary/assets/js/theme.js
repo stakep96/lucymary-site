@@ -30,6 +30,9 @@
   }
   qa('[data-lm-open]').forEach((button) => button.addEventListener('click', () => openOverlay(button.dataset.lmOpen, button)));
   qa('[data-lm-close]').forEach((button) => button.addEventListener('click', closeOverlay));
+  qa('[data-lm-language-select]').forEach((select) => select.addEventListener('change', () => {
+    if (select.value) window.location.assign(select.value);
+  }));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeOverlay(); });
   qa('.lm-overlay').forEach((overlay) => overlay.addEventListener('keydown', (event) => {
     if (event.key !== 'Tab') return;

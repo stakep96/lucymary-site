@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.1.1' );
+define( 'LUCYMARY_VERSION', '0.1.2' );
 
 function lucymary_setup() {
 	load_theme_textdomain( 'lucymary', get_template_directory() . '/languages' );
@@ -40,6 +40,35 @@ add_action( 'wp_enqueue_scripts', 'lucymary_assets' );
 
 function lucymary_asset( $path ) {
 	return get_template_directory_uri() . '/assets/' . ltrim( $path, '/' );
+}
+
+/** Use only the languages and page URLs published by TranslatePress. */
+function lucymary_language_switcher( $placement = 'header' ) {
+	if ( ! function_exists( 'trp_custom_language_switcher' ) || ! apply_filters( 'trp_allow_tp_to_run', true ) ) {
+		return;
+	}
+	$languages = trp_custom_language_switcher();
+	if ( ! is_array( $languages ) || count( $languages ) < 2 ) {
+		return;
+	}
+	$current = get_locale();
+	$mobile = 'menu' === $placement;
+	?>
+	<div class="lm-language-switcher lm-language-switcher--<?php echo esc_attr( $mobile ? 'menu' : 'header' ); ?>">
+		<label for="lm-language-<?php echo esc_attr( $mobile ? 'menu' : 'header' ); ?>"><?php esc_html_e( 'Idioma', 'lucymary' ); ?></label>
+		<select id="lm-language-<?php echo esc_attr( $mobile ? 'menu' : 'header' ); ?>" data-lm-language-select data-no-translation aria-label="<?php esc_attr_e( 'Selecionar idioma', 'lucymary' ); ?>">
+			<?php foreach ( $languages as $language ) :
+				$code = isset( $language['language_code'] ) ? (string) $language['language_code'] : '';
+				$url = isset( $language['current_page_url'] ) ? (string) $language['current_page_url'] : '';
+				if ( ! $code || ! $url ) { continue; }
+				$name = isset( $language['language_name'] ) ? (string) $language['language_name'] : $code;
+				$label = $mobile ? $name : strtoupper( substr( $code, 0, 2 ) );
+				?>
+				<option value="<?php echo esc_url( $url ); ?>" <?php selected( $code, $current ); ?>><?php echo esc_html( $label ); ?></option>
+			<?php endforeach; ?>
+		</select>
+	</div>
+	<?php
 }
 
 function lucymary_shop_url() {

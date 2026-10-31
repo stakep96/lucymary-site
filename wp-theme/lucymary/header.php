@@ -22,6 +22,7 @@ $categories = lucymary_ordered_categories( false );
     <button class="lm-icon-button lm-mobile-menu-button" type="button" data-lm-open="menu" aria-label="<?php esc_attr_e( 'Abrir menu', 'lucymary' ); ?>" aria-controls="lm-mobile-menu" aria-expanded="false"><?php echo lucymary_icon( 'menu', 24 ); ?></button>
     <a class="lm-header-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="LucyMary, início"><img src="<?php echo esc_url( lucymary_asset( 'brand/logo-vinho.png' ) ); ?>" alt="LucyMary" width="220" height="91"></a>
     <div class="lm-header-actions">
+	  <?php lucymary_language_switcher( 'header' ); ?>
       <button class="lm-icon-button" type="button" data-lm-open="search" aria-label="<?php esc_attr_e( 'Pesquisar', 'lucymary' ); ?>" aria-controls="lm-search-dialog" aria-expanded="false"><?php echo lucymary_icon( 'search', 22 ); ?></button>
       <a class="lm-icon-button lm-account-button" href="<?php echo esc_url( $account_url ); ?>" aria-label="<?php esc_attr_e( 'Minha conta', 'lucymary' ); ?>"><?php echo lucymary_icon( 'user', 22 ); ?></a>
       <button class="lm-icon-button lm-bag-button" type="button" data-lm-open="cart" aria-label="<?php esc_attr_e( 'Abrir sacola', 'lucymary' ); ?>" aria-controls="lm-cart-drawer" aria-expanded="false"><?php echo lucymary_icon( 'handbag', 22 ); ?><span class="lm-cart-count"><?php echo function_exists( 'WC' ) && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0; ?></span></button>
@@ -40,6 +41,7 @@ $categories = lucymary_ordered_categories( false );
     <div class="lm-drawer-scroll">
       <div class="lm-menu-account"><a href="<?php echo esc_url( $account_url ); ?>"><?php esc_html_e( 'Entre ou cadastre-se', 'lucymary' ); ?> <?php echo lucymary_icon( 'chevron-right', 20 ); ?></a><div><a href="<?php echo esc_url( $account_url ); ?>"><?php echo lucymary_icon( 'user', 17 ); ?> Minha conta</a><a href="<?php echo esc_url( function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'orders' ) : $account_url ); ?>"><?php esc_html_e( 'Meus pedidos', 'lucymary' ); ?></a></div></div>
       <nav class="lm-menu-links" aria-label="<?php esc_attr_e( 'Links úteis', 'lucymary' ); ?>"><a href="<?php echo esc_url( home_url( '/#lojas' ) ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> Loja</a><a href="<?php echo esc_url( home_url( '/#contato' ) ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> Contato</a><a href="<?php echo esc_url( home_url( '/#sobre' ) ); ?>"><span class="lm-letter">L</span> Sobre</a></nav>
+	  <?php lucymary_language_switcher( 'menu' ); ?>
       <details class="lm-menu-categories" open><summary><?php esc_html_e( 'Ver categorias', 'lucymary' ); ?> <span aria-hidden="true">⌃</span></summary><nav aria-label="<?php esc_attr_e( 'Categorias', 'lucymary' ); ?>"><?php foreach ( $categories as $category ) : ?><a href="<?php echo esc_url( get_term_link( $category ) ); ?>"><?php echo esc_html( $category->name ); ?></a><?php endforeach; ?><a href="<?php echo esc_url( $shop_url ); ?>"><?php esc_html_e( 'Todos os produtos', 'lucymary' ); ?></a></nav></details>
     </div>
   </aside>
