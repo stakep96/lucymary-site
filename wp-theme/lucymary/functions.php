@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.0' );
+define( 'LUCYMARY_VERSION', '0.2.1' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -35,6 +35,16 @@ function lucymary_setup() {
 	add_image_size( 'lucymary-card', 420, 420, false );
 }
 add_action( 'after_setup_theme', 'lucymary_setup' );
+
+function lucymary_footer_customizer( $customize ) {
+	$customize->add_section( 'lucymary_footer_links', array( 'title' => __( 'LucyMary: redes sociais', 'lucymary' ), 'priority' => 160 ) );
+	foreach ( array( 'instagram' => 'Instagram', 'facebook' => 'Facebook' ) as $network => $label ) {
+		$key = 'lucymary_' . $network . '_url';
+		$customize->add_setting( $key, array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+		$customize->add_control( $key, array( 'label' => sprintf( __( 'URL do %s', 'lucymary' ), $label ), 'section' => 'lucymary_footer_links', 'type' => 'url' ) );
+	}
+}
+add_action( 'customize_register', 'lucymary_footer_customizer' );
 
 function lucymary_assets() {
 	$base = get_template_directory_uri();
@@ -120,6 +130,11 @@ function lucymary_icon( $name, $size = 20 ) {
 		'user' => '<circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/>',
 		'pin' => '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',
 		'phone' => '<path d="M7 3H4a2 2 0 0 0-2 2c0 9.4 7.6 17 17 17a2 2 0 0 0 2-2v-3l-5-2-2 2a15 15 0 0 1-7-7l2-2-2-5Z"/>',
+		'mail' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/>',
+		'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+		'instagram' => '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
+		'facebook' => '<path d="M15 21v-8h3l.5-4H15V7c0-1.1.5-1.5 1.6-1.5H19V2h-3.3C12.6 2 11 4 11 7v2H8v4h3v8"/>',
+		'whatsapp' => '<path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.4-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 8.5c.4 2.9 2.6 5.2 5.5 5.8l1.5-1.4-2-1.1-.9 1a6.2 6.2 0 0 1-2.4-2.4l.9-.9-1.1-2Z"/>',
 		'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
 		'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
 		'chevron-down' => '<path d="m6 9 6 6 6-6"/>',

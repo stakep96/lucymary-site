@@ -3,6 +3,10 @@
   const q = (selector, root = document) => root.querySelector(selector);
   const qa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const copy = typeof lucymaryTheme !== 'undefined' ? lucymaryTheme.strings || {} : {};
+  document.addEventListener('pointerdown', () => document.body.classList.add('lm-pointer-navigation'), true);
+  document.addEventListener('keydown', (event) => {
+    if (['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) document.body.classList.remove('lm-pointer-navigation');
+  }, true);
   const overlays = Object.fromEntries(qa('[data-lm-overlay]').map((el) => [el.dataset.lmOverlay, el]));
   let activeOverlay = null;
   let lastTrigger = null;
