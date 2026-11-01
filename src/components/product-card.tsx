@@ -5,10 +5,9 @@ import type { StoreProduct } from "@/lib/woocommerce/types";
 
 interface ProductCardProps {
   product: StoreProduct;
-  showCatalogAction?: boolean;
 }
 
-export function ProductCard({ product, showCatalogAction = false }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
   const image = product.images?.[0];
   const category = product.categories?.[0]?.name;
   const tag = product.tags?.[0]?.name;
@@ -41,7 +40,6 @@ export function ProductCard({ product, showCatalogAction = false }: ProductCardP
         </div>
         <p className="product-price">{product.type === "variable" && "A partir de "}{formatStorePrice(product.prices)}</p>
         {!product.is_in_stock && <span className="stock-note">Indisponível</span>}
-        {showCatalogAction && <Link className="catalog-card-action" href={`/produto/${encodeURIComponent(product.slug)}`}>Ver produto</Link>}
       </div>
     </article>
   );

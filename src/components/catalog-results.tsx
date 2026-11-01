@@ -46,7 +46,7 @@ export function CatalogResults({ collection, page, basePath, query, emptyMessage
         {collection.items.length === 0 ? (
           <CatalogState title="Nenhum produto encontrado" message={emptyMessage || "Não há produtos publicados para esta seleção."} />
         ) : <div className="product-grid">
-          {collection.items.map((product) => <ProductCard key={product.id} product={product} showCatalogAction={Boolean(filters)} />)}
+          {collection.items.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>}
         <Pagination page={page} totalPages={collection.totalPages} basePath={basePath} query={paginationQuery} />
       </div>

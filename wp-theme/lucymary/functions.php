@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.4' );
+define( 'LUCYMARY_VERSION', '0.2.5' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -174,7 +174,6 @@ function lucymary_product_card( $product ) {
 			<div class="lm-rating" aria-label="<?php echo esc_attr( sprintf( __( 'Avaliação %1$s de 5, %2$s avaliações', 'lucymary' ), $product->get_average_rating(), $product->get_review_count() ) ); ?>"><span aria-hidden="true"><?php echo esc_html( str_repeat( '★', (int) round( (float) $product->get_average_rating() ) ) . str_repeat( '☆', 5 - (int) round( (float) $product->get_average_rating() ) ) ); ?></span> <small>(<?php echo (int) $product->get_review_count(); ?>)</small></div>
 			<p class="lm-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
 			<?php if ( ! $product->is_in_stock() ) : ?><small class="lm-stock-note"><?php esc_html_e( 'Indisponível', 'lucymary' ); ?></small><?php endif; ?>
-			<a class="lm-card-action" href="<?php echo esc_url( $url ); ?>"><?php esc_html_e( 'Ver produto', 'lucymary' ); ?></a>
 		</div>
 	</article>
 	<?php
