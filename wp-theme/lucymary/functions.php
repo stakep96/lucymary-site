@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.2' );
+define( 'LUCYMARY_VERSION', '0.2.3' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -71,7 +71,7 @@ function lucymary_assets() {
 			'shippingChooseOption' => __( 'Escolha as opções do produto antes de calcular o frete.', 'lucymary' ),
 			'shippingLoading' => __( 'Calculando frete…', 'lucymary' ),
 			'shippingError' => __( 'Não foi possível calcular o frete.', 'lucymary' ),
-			'shippingNoRates' => __( 'Nenhuma modalidade de frete disponível para este CEP.', 'lucymary' ),
+			'shippingNoRates' => __( 'Não foi possível estimar o frete aqui. Confira as opções no carrinho.', 'lucymary' ),
 			'chooseProductOptions' => __( 'Escolha as opções da peça para continuar.', 'lucymary' ),
 			'waitForVariation' => __( 'Aguarde a confirmação da opção selecionada e tente novamente.', 'lucymary' ),
 			'cartUpdateError' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ),
@@ -329,6 +329,36 @@ function lucymary_product_search() {
 add_action( 'wp_ajax_lucymary_search', 'lucymary_product_search' );
 add_action( 'wp_ajax_nopriv_lucymary_search', 'lucymary_product_search' );
 
+/** Resolve only the public city and state needed to match the store's shipping zones. */
+function lucymary_postcode_location( $postcode ) {
+	$cache_key = 'lucymary_cep_' . $postcode;
+	$cached = get_transient( $cache_key );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+
+	$location = array( 'state' => '', 'city' => '' );
+	$response = wp_remote_get( 'https://viacep.com.br/ws/' . rawurlencode( $postcode ) . '/json/', array( 'timeout' => 3 ) );
+	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		return $location;
+	}
+
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( ! is_array( $data ) || ! empty( $data['erro'] ) || empty( $data['uf'] ) || empty( $data['localidade'] ) ) {
+		return $location;
+	}
+
+	$state = strtoupper( sanitize_text_field( $data['uf'] ) );
+	$states = WC()->countries->get_states( 'BR' );
+	if ( ! isset( $states[ $state ] ) ) {
+		return $location;
+	}
+
+	$location = array( 'state' => $state, 'city' => sanitize_text_field( $data['localidade'] ) );
+	set_transient( $cache_key, $location, WEEK_IN_SECONDS );
+	return $location;
+}
+
 function lucymary_shipping_quote() {
 	check_ajax_referer( 'lucymary_shipping', 'nonce' );
 	if ( ! function_exists( 'WC' ) || ! WC()->shipping() || ! WC()->cart ) { wp_send_json_error( array( 'message' => __( 'Frete indisponível no momento.', 'lucymary' ) ), 503 ); }
@@ -338,10 +368,33 @@ function lucymary_shipping_quote() {
 	if ( strlen( $postcode ) !== 8 ) { wp_send_json_error( array( 'message' => __( 'Informe um CEP com 8 dígitos.', 'lucymary' ) ), 400 ); }
 	$product = wc_get_product( $id );
 	if ( ! $product || ! $product->is_purchasable() || ! $product->is_in_stock() || $product->is_virtual() || $product->is_type( 'variable' ) ) { wp_send_json_error( array( 'message' => __( 'Escolha uma opção disponível para calcular o frete.', 'lucymary' ) ), 400 ); }
-	$price = (float) wc_get_price_to_display( $product );
-	$package = array( 'contents' => array( 'lucymary_quote' => array( 'data' => $product, 'quantity' => $quantity, 'line_total' => $price * $quantity, 'line_subtotal' => $price * $quantity, 'line_tax' => 0, 'line_subtotal_tax' => 0 ) ), 'contents_cost' => $price * $quantity, 'applied_coupons' => array(), 'user' => array( 'ID' => get_current_user_id() ), 'destination' => array( 'country' => 'BR', 'state' => '', 'postcode' => $postcode, 'city' => '', 'address' => '', 'address_1' => '', 'address_2' => '' ), 'cart_subtotal' => $price * $quantity );
+	$location = lucymary_postcode_location( $postcode );
+	$price = (float) wc_get_price_excluding_tax( $product );
+	$subtotal = $price * $quantity;
+	$item = array(
+		'product_id' => $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id(),
+		'variation_id' => $product->is_type( 'variation' ) ? $product->get_id() : 0,
+		'variation' => $product->is_type( 'variation' ) ? $product->get_variation_attributes() : array(),
+		'data' => $product,
+		'quantity' => $quantity,
+		'line_total' => $subtotal,
+		'line_subtotal' => $subtotal,
+		'line_tax' => 0,
+		'line_subtotal_tax' => 0,
+		'line_tax_data' => array( 'total' => array(), 'subtotal' => array() ),
+	);
+	$package = array(
+		'contents' => array( 'lucymary_quote' => $item ),
+		'contents_cost' => $subtotal,
+		'applied_coupons' => array(),
+		'user' => array( 'ID' => get_current_user_id() ),
+		'destination' => array( 'country' => 'BR', 'state' => $location['state'], 'postcode' => $postcode, 'city' => $location['city'], 'address' => '', 'address_1' => '', 'address_2' => '' ),
+		'cart_subtotal' => wc_prices_include_tax() && 'incl' === get_option( 'woocommerce_tax_display_cart' ) ? (float) wc_get_price_including_tax( $product, array( 'qty' => $quantity ) ) : $subtotal,
+	);
+	if ( WC()->session ) { WC()->session->__unset( 'shipping_for_package_99999' ); }
 	$shipping = WC()->shipping()->calculate_shipping_for_package( $package, 99999 );
 	if ( WC()->session ) { WC()->session->__unset( 'shipping_for_package_99999' ); }
+	if ( ! is_array( $shipping ) ) { wp_send_json_error( array( 'message' => __( 'Frete indisponível no momento.', 'lucymary' ) ), 503 ); }
 	$rates = array();
 	foreach ( $shipping['rates'] ?? array() as $rate ) {
 		$rates[] = array( 'label' => $rate->get_label(), 'cost' => wp_strip_all_tags( wc_price( (float) $rate->get_cost() ) ) );

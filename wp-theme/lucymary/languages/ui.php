@@ -104,6 +104,7 @@ return array(
 		'Opção' => 'Option',
 		'Pesquisar produtos…' => 'Search products…',
 		'Nenhuma modalidade de frete disponível para este CEP.' => 'No shipping method is available for this postal code.',
+		'Não foi possível estimar o frete aqui. Confira as opções no carrinho.' => 'Shipping could not be estimated here. Check the options in your cart.',
 		'Noivados para sempre, sim. Confira as alianças LucyMary.' => 'Forever starts with yes. Explore LucyMary wedding rings.',
 		'Nossa loja' => 'Our store',
 		'Nossas lojas' => 'Our stores',
