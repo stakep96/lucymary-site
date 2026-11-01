@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.3' );
+define( 'LUCYMARY_VERSION', '0.2.4' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -322,7 +322,7 @@ function lucymary_product_search() {
 	foreach ( $ids as $id ) {
 		$product = wc_get_product( $id );
 		if ( ! $product || ! $product->is_visible() ) { continue; }
-		$items[] = array( 'name' => $product->get_name(), 'url' => get_permalink( $id ), 'image' => wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) ?: '', 'price' => wp_strip_all_tags( $product->get_price_html() ) );
+		$items[] = array( 'name' => html_entity_decode( wp_strip_all_tags( $product->get_name() ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'url' => get_permalink( $id ), 'image' => wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) ?: '', 'price' => html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 	}
 	wp_send_json_success( $items );
 }
@@ -331,13 +331,13 @@ add_action( 'wp_ajax_nopriv_lucymary_search', 'lucymary_product_search' );
 
 /** Resolve only the public city and state needed to match the store's shipping zones. */
 function lucymary_postcode_location( $postcode ) {
-	$cache_key = 'lucymary_cep_' . $postcode;
+	$cache_key = 'lucymary_cep_v2_' . $postcode;
 	$cached = get_transient( $cache_key );
 	if ( is_array( $cached ) ) {
 		return $cached;
 	}
 
-	$location = array( 'state' => '', 'city' => '' );
+	$location = array( 'state' => '', 'city' => '', 'address' => '' );
 	$response = wp_remote_get( 'https://viacep.com.br/ws/' . rawurlencode( $postcode ) . '/json/', array( 'timeout' => 3 ) );
 	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
 		return $location;
@@ -354,7 +354,13 @@ function lucymary_postcode_location( $postcode ) {
 		return $location;
 	}
 
-	$location = array( 'state' => $state, 'city' => sanitize_text_field( $data['localidade'] ) );
+	$city = sanitize_text_field( $data['localidade'] );
+	$parts = array_filter( array(
+		! empty( $data['logradouro'] ) ? sanitize_text_field( $data['logradouro'] ) : '',
+		! empty( $data['bairro'] ) ? sanitize_text_field( $data['bairro'] ) : '',
+		$city . '/' . $state,
+	) );
+	$location = array( 'state' => $state, 'city' => $city, 'address' => implode( ', ', $parts ) );
 	set_transient( $cache_key, $location, WEEK_IN_SECONDS );
 	return $location;
 }
@@ -397,9 +403,10 @@ function lucymary_shipping_quote() {
 	if ( ! is_array( $shipping ) ) { wp_send_json_error( array( 'message' => __( 'Frete indisponível no momento.', 'lucymary' ) ), 503 ); }
 	$rates = array();
 	foreach ( $shipping['rates'] ?? array() as $rate ) {
-		$rates[] = array( 'label' => $rate->get_label(), 'cost' => wp_strip_all_tags( wc_price( (float) $rate->get_cost() ) ) );
+		$cost = (float) $rate->get_cost();
+		$rates[] = array( 'label' => html_entity_decode( wp_strip_all_tags( $rate->get_label() ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'cost' => 0.0 === $cost ? __( 'Grátis', 'lucymary' ) : html_entity_decode( wp_strip_all_tags( wc_price( $cost ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 	}
-	wp_send_json_success( array( 'rates' => $rates ) );
+	wp_send_json_success( array( 'address' => $location['address'], 'rates' => $rates ) );
 }
 add_action( 'wp_ajax_lucymary_shipping', 'lucymary_shipping_quote' );
 add_action( 'wp_ajax_nopriv_lucymary_shipping', 'lucymary_shipping_quote' );

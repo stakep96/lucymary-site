@@ -270,6 +270,7 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-shipping-form button{min-width:92px;border:0;border-radius:4px;background:var(--lm-wine);color:#fff;font-size:12px}
 .lm-product-shipping small{display:block;margin-top:10px;color:#81757d;font-size:11px}
 .lm-shipping-response{margin-top:12px;font-size:12px}
+.lm-shipping-address{margin:0 0 8px;color:var(--lm-muted);line-height:1.5}
 .lm-shipping-response>div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--lm-line)}
 .lm-shipping-response strong{color:var(--lm-wine)}
 .lm-product-sku{margin-top:25px;color:#887f84;font-size:11px}

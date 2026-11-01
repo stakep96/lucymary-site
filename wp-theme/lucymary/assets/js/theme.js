@@ -341,7 +341,8 @@
       const data = await response.json();
       if (!data.success) throw new Error(copy.shippingError);
       target.replaceChildren();
-      if (!data.data.rates.length) { target.textContent = copy.shippingNoRates; return; }
+      if (data.data.address) { const address = document.createElement('p'); address.className = 'lm-shipping-address'; address.textContent = data.data.address; target.appendChild(address); }
+      if (!data.data.rates.length) { const message = document.createElement('p'); message.textContent = copy.shippingNoRates; target.appendChild(message); return; }
       data.data.rates.forEach((rate) => { const row = document.createElement('div'), name = document.createElement('span'), cost = document.createElement('strong'); name.textContent = rate.label; cost.textContent = rate.cost; row.append(name, cost); target.appendChild(row); });
     } catch (error) { target.textContent = error.message || copy.shippingError; }
     finally { button.disabled = false; }
