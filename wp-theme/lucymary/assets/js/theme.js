@@ -21,11 +21,12 @@
     lastTrigger?.focus();
   }
   function openOverlay(name, trigger) {
+    const focusReturn = trigger.closest('.lm-overlay') ? q('.lm-mobile-menu-button') : trigger;
     closeOverlay();
     const overlay = overlays[name];
     if (!overlay) return;
     activeOverlay = overlay;
-    lastTrigger = trigger;
+    lastTrigger = focusReturn;
     overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden', 'false');
     trigger.setAttribute('aria-expanded', 'true');
@@ -35,6 +36,63 @@
   }
   qa('[data-lm-open]').forEach((button) => button.addEventListener('click', () => openOverlay(button.dataset.lmOpen, button)));
   qa('[data-lm-close]').forEach((button) => button.addEventListener('click', closeOverlay));
+
+  const favoriteKey = 'lucymary-favorites-v1';
+  const favoriteList = q('.lm-favorites-list');
+  function readFavorites() {
+    try {
+      const items = JSON.parse(localStorage.getItem(favoriteKey) || '[]');
+      return Array.isArray(items) ? items.filter((item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.url === 'string').slice(0, 100) : [];
+    } catch { return []; }
+  }
+  let favorites = readFavorites();
+  function syncFavoriteButtons() {
+    qa('[data-lm-favorite]').forEach((button) => {
+      const saved = favorites.some((item) => item.id === button.dataset.lmFavorite);
+      button.setAttribute('aria-pressed', String(saved));
+      button.setAttribute('aria-label', `${saved ? copy.favoriteRemove : copy.favoriteSave}: ${button.dataset.name}`);
+      button.title = saved ? copy.favoriteRemove : copy.favoriteSave;
+    });
+  }
+  function renderFavorites() {
+    if (!favoriteList) return;
+    favoriteList.replaceChildren();
+    if (!favorites.length) {
+      const empty = document.createElement('p'); empty.className = 'lm-favorites-empty'; empty.textContent = copy.favoriteEmpty;
+      favoriteList.appendChild(empty); return;
+    }
+    for (const item of favorites) {
+      let url;
+      try { url = new URL(item.url, window.location.href); } catch { continue; }
+      if (url.origin !== window.location.origin) continue;
+      const row = document.createElement('div'); row.className = 'lm-favorite-item';
+      const imageLink = document.createElement('a'); imageLink.href = url.href;
+      if (item.image) { const image = document.createElement('img'); image.src = item.image; image.alt = ''; image.loading = 'lazy'; imageLink.appendChild(image); }
+      const title = document.createElement('a'); title.href = url.href; title.textContent = item.name;
+      const remove = document.createElement('button'); remove.type = 'button'; remove.dataset.lmFavoriteRemove = item.id;
+      remove.textContent = '×'; remove.setAttribute('aria-label', `${copy.favoriteRemove}: ${item.name}`);
+      row.append(imageLink, title, remove); favoriteList.appendChild(row);
+    }
+  }
+  function saveFavorites() {
+    try { localStorage.setItem(favoriteKey, JSON.stringify(favorites)); } catch { /* Favorites remain available for this visit. */ }
+    syncFavoriteButtons(); renderFavorites();
+  }
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-lm-favorite]');
+    const remove = event.target.closest('[data-lm-favorite-remove]');
+    if (!button && !remove) return;
+    const id = button?.dataset.lmFavorite || remove.dataset.lmFavoriteRemove;
+    if (favorites.some((item) => item.id === id)) favorites = favorites.filter((item) => item.id !== id);
+    else if (button) favorites.unshift({ id, name: button.dataset.name, url: button.dataset.url, image: button.dataset.image || '' });
+    saveFavorites();
+  });
+  window.addEventListener('storage', (event) => { if (event.key === favoriteKey) { favorites = readFavorites(); syncFavoriteButtons(); renderFavorites(); } });
+  syncFavoriteButtons(); renderFavorites();
+
+  if (window.jQuery) window.jQuery(document.body).on('added_to_cart', (_event, _fragments, _hash, button) => {
+    if (button?.hasClass?.('lm-card-cart')) openOverlay('cart', q('.lm-bag-button'));
+  });
   document.addEventListener('click', (event) => {
     qa('.lm-language-switcher[open]').forEach((switcher) => {
       if (!switcher.contains(event.target)) switcher.open = false;

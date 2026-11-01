@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.5' );
+define( 'LUCYMARY_VERSION', '0.2.6' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -48,8 +48,14 @@ add_action( 'customize_register', 'lucymary_footer_customizer' );
 
 function lucymary_assets() {
 	$base = get_template_directory_uri();
+	$script_dependencies = array();
+	if ( function_exists( 'WC' ) ) {
+		wp_enqueue_script( 'wc-add-to-cart' );
+		wp_enqueue_script( 'wc-cart-fragments' );
+		$script_dependencies[] = 'wc-add-to-cart';
+	}
 	wp_enqueue_style( 'lucymary-theme', $base . '/assets/css/theme.css', array(), LUCYMARY_VERSION );
-	wp_enqueue_script( 'lucymary-theme', $base . '/assets/js/theme.js', array(), LUCYMARY_VERSION, true );
+	wp_enqueue_script( 'lucymary-theme', $base . '/assets/js/theme.js', $script_dependencies, LUCYMARY_VERSION, true );
 	wp_localize_script( 'lucymary-theme', 'lucymaryTheme', array(
 		'ajaxUrl' => 'en' === lucymary_language() ? add_query_arg( 'lm_lang', 'en', admin_url( 'admin-ajax.php' ) ) : admin_url( 'admin-ajax.php' ),
 		'shippingNonce' => wp_create_nonce( 'lucymary_shipping' ),
@@ -77,14 +83,14 @@ function lucymary_assets() {
 			'cartUpdateError' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ),
 			'cartQuantityDecrease' => __( 'Diminuir quantidade', 'lucymary' ),
 			'cartQuantityIncrease' => __( 'Aumentar quantidade', 'lucymary' ),
+			'favoriteSave' => __( 'Salvar nos favoritos', 'lucymary' ),
+			'favoriteRemove' => __( 'Remover dos favoritos', 'lucymary' ),
+			'favoriteEmpty' => __( 'Nenhuma peça salva ainda.', 'lucymary' ),
 		),
 		'rulerIcon' => lucymary_icon( 'ruler', 17 ),
 	) );
 	if ( function_exists( 'is_product' ) && is_product() ) {
 		wp_enqueue_script( 'wc-add-to-cart-variation' );
-	}
-	if ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() ) ) {
-		wp_enqueue_script( 'wc-cart-fragments' );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'lucymary_assets' );
@@ -131,6 +137,8 @@ function lucymary_icon( $name, $size = 20 ) {
 		'close' => '<path d="M5 5l14 14M19 5L5 19"/>',
 		'search' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
 		'handbag' => '<path d="M5 9h14l1 12H4L5 9Z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/>',
+		'cart' => '<circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h2l2.2 11.5a2 2 0 0 0 2 1.5h9.3a2 2 0 0 0 2-1.6L21 7H5"/>',
+		'heart' => '<path d="M20.8 8.3c0 4.4-8.8 10.5-8.8 10.5S3.2 12.7 3.2 8.3a4.8 4.8 0 0 1 8.8-2.6 4.8 4.8 0 0 1 8.8 2.6Z"/>',
 		'user' => '<circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/>',
 		'pin' => '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',
 		'phone' => '<path d="M7 3H4a2 2 0 0 0-2 2c0 9.4 7.6 17 17 17a2 2 0 0 0 2-2v-3l-5-2-2 2a15 15 0 0 1-7-7l2-2-2-5Z"/>',
@@ -162,12 +170,23 @@ function lucymary_product_card( $product ) {
 	$category = ! is_wp_error( $terms ) && $terms ? $terms[0]->name : '';
 	$tag = ! is_wp_error( $tags ) && $tags ? $tags[0]->name : '';
 	$url = get_permalink( $product->get_id() );
+	$image_url = $product->get_image_id() ? wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
+	$can_add = $product->is_purchasable() && $product->is_in_stock();
+	$ajax_add = $can_add && $product->is_type( 'simple' ) && $product->supports( 'ajax_add_to_cart' );
 	?>
 	<article class="lm-product-card">
-		<a class="lm-product-image" href="<?php echo esc_url( $url ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Ver %s', 'lucymary' ), $product->get_name() ) ); ?>">
-			<?php if ( $product->get_image_id() ) : echo wp_get_attachment_image( $product->get_image_id(), 'woocommerce_thumbnail', false, array( 'loading' => 'lazy', 'alt' => $product->get_name() ) ); else : ?><span class="lm-image-empty" aria-hidden="true">✦</span><?php endif; ?>
-			<?php if ( $tag ) : ?><span class="lm-product-badge"><?php echo esc_html( $tag ); ?></span><?php endif; ?>
-		</a>
+		<div class="lm-product-media">
+			<a class="lm-product-image" href="<?php echo esc_url( $url ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Ver %s', 'lucymary' ), $product->get_name() ) ); ?>">
+				<?php if ( $product->get_image_id() ) : echo wp_get_attachment_image( $product->get_image_id(), 'woocommerce_thumbnail', false, array( 'loading' => 'lazy', 'alt' => $product->get_name() ) ); else : ?><span class="lm-image-empty" aria-hidden="true">✦</span><?php endif; ?>
+				<?php if ( $tag ) : ?><span class="lm-product-badge"><?php echo esc_html( $tag ); ?></span><?php endif; ?>
+			</a>
+			<div class="lm-product-actions">
+				<button class="lm-card-favorite" type="button" data-lm-favorite="<?php echo (int) $product->get_id(); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>" data-url="<?php echo esc_url( $url ); ?>" data-image="<?php echo esc_url( $image_url ?: '' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Salvar %s nos favoritos', 'lucymary' ), $product->get_name() ) ); ?>" aria-pressed="false" title="<?php esc_attr_e( 'Salvar nos favoritos', 'lucymary' ); ?>"><?php echo lucymary_icon( 'heart', 19 ); ?></button>
+				<?php if ( $can_add ) : ?>
+				<a class="lm-card-cart<?php echo $ajax_add ? ' add_to_cart_button ajax_add_to_cart product_type_simple' : ''; ?>" href="<?php echo esc_url( $ajax_add ? $product->add_to_cart_url() : $url ); ?>" data-product_id="<?php echo (int) $product->get_id(); ?>" data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>" data-quantity="1" aria-label="<?php echo esc_attr( $ajax_add ? sprintf( __( 'Adicionar %s à sacola', 'lucymary' ), $product->get_name() ) : sprintf( __( 'Escolher opções de %s', 'lucymary' ), $product->get_name() ) ); ?>" title="<?php echo esc_attr( $ajax_add ? __( 'Adicionar à sacola', 'lucymary' ) : __( 'Escolher opções', 'lucymary' ) ); ?>"<?php if ( $ajax_add ) : ?> rel="nofollow"<?php endif; ?>><?php echo lucymary_icon( 'cart', 19 ); ?></a>
+				<?php endif; ?>
+			</div>
+		</div>
 		<div class="lm-product-copy">
 			<?php if ( $category ) : ?><span class="lm-product-category"><?php echo esc_html( $category ); ?></span><?php endif; ?>
 			<h3><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $product->get_name() ); ?></a></h3>
