@@ -62,7 +62,7 @@ $categories = lucymary_ordered_categories( false );
   <aside class="lm-drawer lm-cart-drawer" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Sua sacola', 'lucymary' ); ?>">
     <div class="lm-drawer-heading"><h2><?php esc_html_e( 'Sua sacola', 'lucymary' ); ?></h2><button type="button" class="lm-icon-button" data-lm-close aria-label="<?php esc_attr_e( 'Fechar sacola', 'lucymary' ); ?>"><?php echo lucymary_icon( 'close', 22 ); ?></button></div>
     <p class="lm-cart-feedback" role="status" aria-live="polite" hidden></p>
-    <div class="lm-mini-cart-content"><?php if ( function_exists( 'woocommerce_mini_cart' ) ) { woocommerce_mini_cart(); } else { echo '<p>' . esc_html__( 'A loja está indisponível.', 'lucymary' ) . '</p>'; } ?></div>
+    <div class="lm-mini-cart-content"><?php if ( function_exists( 'WC' ) ) { lucymary_render_mini_cart(); } else { echo '<p>' . esc_html__( 'A loja está indisponível.', 'lucymary' ) . '</p>'; } ?></div>
     <div class="lm-cart-links<?php echo function_exists( 'WC' ) && WC()->cart && WC()->cart->is_empty() ? ' is-empty' : ''; ?>"><a href="<?php echo esc_url( $cart_url ); ?>"><?php esc_html_e( 'Ver carrinho', 'lucymary' ); ?></a><a href="<?php echo esc_url( $checkout_url ); ?>"><?php esc_html_e( 'Finalização de compra', 'lucymary' ); ?></a></div>
   </aside>
 </div>

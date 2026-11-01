@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
 
 do_action( 'woocommerce_before_mini_cart' );
 if ( WC()->cart && ! WC()->cart->is_empty() ) : ?>
-  <ul class="woocommerce-mini-cart cart_list product_list_widget <?php echo esc_attr( isset( $args['list_class'] ) ? $args['list_class'] : '' ); ?>">
+  <ul class="woocommerce-mini-cart cart_list product_list_widget lm-mini-cart-list <?php echo esc_attr( isset( $args['list_class'] ) ? $args['list_class'] : '' ); ?>">
     <?php
     do_action( 'woocommerce_before_mini_cart_contents' );
     foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) :

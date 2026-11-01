@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.6' );
+define( 'LUCYMARY_VERSION', '0.2.7' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -273,8 +273,19 @@ add_filter( 'woocommerce_product_single_add_to_cart_text', 'lucymary_product_but
 
 function lucymary_buy_now_button() {
 	echo '<button type="submit" class="button lm-buy-now" name="add-to-cart" value="' . (int) get_the_ID() . '" formaction="' . esc_url( add_query_arg( 'lucymary_buy_now', '1', get_permalink() ) ) . '">' . esc_html__( 'Comprar agora', 'lucymary' ) . '</button>';
+	$product = wc_get_product( get_the_ID() );
+	if ( ! $product ) { return; }
+	$image_url = $product->get_image_id() ? wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
+	echo '<button type="button" class="lm-single-favorite" data-lm-favorite="' . (int) $product->get_id() . '" data-name="' . esc_attr( $product->get_name() ) . '" data-url="' . esc_url( get_permalink( $product->get_id() ) ) . '" data-image="' . esc_url( $image_url ?: '' ) . '" aria-label="' . esc_attr( sprintf( __( 'Salvar %s nos favoritos', 'lucymary' ), $product->get_name() ) ) . '" aria-pressed="false" title="' . esc_attr__( 'Salvar nos favoritos', 'lucymary' ) . '">' . lucymary_icon( 'heart', 21 ) . '</button>';
 }
 add_action( 'woocommerce_after_add_to_cart_button', 'lucymary_buy_now_button' );
+
+/** Keep the theme drawer layout even when a plugin replaces WooCommerce's mini-cart template. */
+function lucymary_render_mini_cart() {
+	if ( ! function_exists( 'WC' ) ) { return; }
+	$args = array();
+	include get_theme_file_path( 'woocommerce/cart/mini-cart.php' );
+}
 
 function lucymary_buy_now_redirect( $url ) {
 	if ( ! empty( $_REQUEST['lucymary_buy_now'] ) && function_exists( 'wc_get_checkout_url' ) && WC()->cart && ! WC()->cart->is_empty() ) {
@@ -291,7 +302,7 @@ function lucymary_cart_fragments( $fragments ) {
 	$fragments['span.lm-cart-count'] = ob_get_clean();
 	ob_start();
 	echo '<div class="lm-mini-cart-content">';
-	woocommerce_mini_cart();
+	lucymary_render_mini_cart();
 	echo '</div>';
 	$fragments['div.lm-mini-cart-content'] = ob_get_clean();
 	return $fragments;
@@ -325,7 +336,7 @@ function lucymary_cart_quantity() {
 	}
 	if ( 0 === $quantity ) { WC()->cart->calculate_totals(); }
 	ob_start();
-	woocommerce_mini_cart();
+	lucymary_render_mini_cart();
 	wp_send_json_success( array( 'html' => ob_get_clean(), 'count' => WC()->cart->get_cart_contents_count() ) );
 }
 add_action( 'wp_ajax_lucymary_cart_quantity', 'lucymary_cart_quantity' );
