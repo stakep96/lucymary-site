@@ -3,6 +3,18 @@
   const q = (selector, root = document) => root.querySelector(selector);
   const qa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const copy = typeof lucymaryTheme !== 'undefined' ? lucymaryTheme.strings || {} : {};
+  const checkoutDetails = q('.lm-checkout-fields #customer_details');
+  if (checkoutDetails) {
+    const notes = q('.woocommerce-additional-fields', checkoutDetails);
+    const billing = q('.col-1', checkoutDetails);
+    const shippingToggle = q('#ship-to-different-address-checkbox', checkoutDetails);
+    if (notes && billing && shippingToggle) {
+      billing.appendChild(notes);
+      const syncNotes = () => { notes.hidden = !shippingToggle.checked; };
+      shippingToggle.addEventListener('change', syncNotes);
+      syncNotes();
+    }
+  }
   document.addEventListener('pointerdown', () => document.body.classList.add('lm-pointer-navigation'), true);
   document.addEventListener('keydown', (event) => {
     if (['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) document.body.classList.remove('lm-pointer-navigation');

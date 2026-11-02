@@ -4,6 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 return array(
 	'en' => array(
+		'Telefone' => 'Phone',
 		'A sacola está indisponível no momento.' => 'The bag is temporarily unavailable.',
 		'Essa quantidade não está disponível.' => 'This quantity is not available.',
 		'Quantidade inválida.' => 'Invalid quantity.',

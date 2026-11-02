@@ -9,10 +9,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.13' );
+define( 'LUCYMARY_VERSION', '0.2.14' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
+
+/** Keep the native billing phone field and make it required at checkout. */
+function lucymary_require_billing_phone( $fields ) {
+	if ( isset( $fields['billing']['billing_phone'] ) ) {
+		$fields['billing']['billing_phone']['required'] = true;
+		$fields['billing']['billing_phone']['label'] = __( 'Telefone', 'lucymary' );
+	}
+	return $fields;
+}
+add_filter( 'woocommerce_checkout_fields', 'lucymary_require_billing_phone', 100 );
+
+/** WooCommerce selects the first gateway when none was chosen; put an available card option first. */
+function lucymary_prefer_card_gateway( $gateways ) {
+	if ( ! is_array( $gateways ) || ! function_exists( 'WC' ) || ! WC()->session || ! function_exists( 'is_checkout' ) || ! is_checkout() ) { return $gateways; }
+	$chosen = WC()->session->get( 'chosen_payment_method' );
+	if ( $chosen && isset( $gateways[ $chosen ] ) ) { return $gateways; }
+	foreach ( $gateways as $id => $gateway ) {
+		$title = remove_accents( wp_strip_all_tags( $gateway->get_title() ) );
+		if ( preg_match( '/cartao|credit card|debit card/i', $title ) || preg_match( '/mercadopago.custom|credit|card/i', $id ) ) {
+			return array( $id => $gateway ) + $gateways;
+		}
+	}
+	return $gateways;
+}
+add_filter( 'woocommerce_available_payment_gateways', 'lucymary_prefer_card_gateway', 100 );
+
+/** Add each cart item's WooCommerce image to the classic checkout review, including Ajax refreshes. */
+function lucymary_checkout_item_thumbnail( $quantity_html, $cart_item ) {
+	$product = $cart_item['data'] ?? null;
+	if ( $product instanceof WC_Product && $product->exists() ) {
+		$thumbnail = $product->get_image( 'woocommerce_thumbnail', array( 'class' => 'lm-checkout-product-image', 'loading' => 'lazy' ) );
+		return $quantity_html . '<span class="lm-checkout-product-thumb" aria-hidden="true">' . wp_kses_post( $thumbnail ) . '</span>';
+	}
+	return $quantity_html;
+}
+add_filter( 'woocommerce_checkout_cart_item_quantity', 'lucymary_checkout_item_thumbnail', 10, 2 );
 require_once __DIR__ . '/inc/language.php';
 require_once __DIR__ . '/inc/favorites.php';
 

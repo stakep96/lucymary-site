@@ -14,7 +14,7 @@ O diretório [`lucymary/`](lucymary/) é um **tema clássico WordPress** criado 
 - Cabeçalho desktop e mobile com a faixa da logo fixa ao rolar, menu lateral animado, busca de produtos, sacola lateral, botão de voltar ao topo e rodapé com seções de contato, pagamento, entrega e segurança.
 - Loja e categorias com produtos, ordenação, paginação e filtros de preço, avaliação e atributos **globais** `pa_cor`/`pa_cores` e `pa_material`, quando existirem.
 - Produto com galeria, referência acima do título, descrição curta, preço/estoque do WooCommerce, atributos e variações, seletor visual de aro, botões **Adicionar à sacola** e **Comprar agora**, favorito após a compra e estimativa de frete por CEP.
-- Busca, páginas gerais, carrinho, checkout e minha conta. A sacola lateral permite alterar a quantidade e remover itens da sessão WooCommerce. O carrinho clássico exibe cupom, frete e totais; o checkout clássico mostra formulário e pagamento à esquerda e resumo à direita. As páginas comerciais mantêm os formulários, validações, totais e métodos de pagamento do WooCommerce.
+- Busca, páginas gerais, carrinho, checkout e minha conta. A sacola lateral permite alterar a quantidade e remover itens da sessão WooCommerce. O carrinho clássico exibe cupom, frete e totais; o checkout clássico mostra cobrança à esquerda e resumo, cupom e pagamento à direita. As páginas comerciais mantêm os formulários, validações, totais e métodos de pagamento do WooCommerce.
 
 ## Idiomas: português e inglês
 
@@ -31,7 +31,7 @@ Essa implementação não gera tradução automática. Complete os campos em ing
 
 1. Faça um backup de arquivos e banco do WordPress. Não substitua a instalação de produção como primeiro teste.
 2. Instale o WooCommerce e confirme que as páginas **Loja**, **Carrinho**, **Finalizar compra** e **Minha conta** estão atribuídas em WooCommerce → Configurações → Avançado.
-3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.13.zip`).
+3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.14.zip`).
 4. Em um ambiente de teste, vá a Aparência → Temas → Adicionar novo → Enviar tema e instale esse ZIP. Ele contém a pasta `lucymary/` no nível correto.
 5. Com ShopEngine ainda ativo, templates do próprio ShopEngine podem continuar sobrepondo os do tema. Desative **somente o ShopEngine no ambiente de teste** após conferir suas seis páginas ativas. Teste home, loja, categoria, produto simples e variável, busca, carrinho, cupom, CEP, checkout e minha conta.
 6. Valide o plugin Mercado Pago Checkout Pro no checkout real do WooCommerce com o procedimento de teste autorizado da loja. O botão **Comprar agora** adiciona o produto e redireciona para o checkout do WooCommerce; o tema não confirma pagamento por URL de retorno nem cria pedidos diretamente.
