@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.17' );
+define( 'LUCYMARY_VERSION', '0.2.18' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
@@ -117,7 +117,11 @@ function lucymary_hero_interval( $value ) {
 
 function lucymary_hero_customizer( $customize ) {
 	$section = 'lucymary_home_banners';
-	$customize->add_section( $section, array( 'title' => __( 'LucyMary: banners da home', 'lucymary' ), 'priority' => 155 ) );
+	$customize->add_section( $section, array(
+		'title'       => __( 'LucyMary: banners da home', 'lucymary' ),
+		'description' => __( 'Tamanhos recomendados: desktop 1600 × 286 px; celular 1080 × 1200 px. Mantenha textos e detalhes importantes afastados das bordas, pois a imagem pode ser cortada para preencher a tela.', 'lucymary' ),
+		'priority'    => 155,
+	) );
 	$customize->add_setting( 'lucymary_hero_interval', array( 'default' => 7, 'sanitize_callback' => 'lucymary_hero_interval' ) );
 	$customize->add_control( 'lucymary_hero_interval', array(
 		'label' => __( 'Troca automática (segundos)', 'lucymary' ),
