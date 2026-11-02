@@ -41,6 +41,17 @@ O tema tem fallback para os shortcodes clássicos `[woocommerce_cart]`, `[woocom
 
 O novo desenho do carrinho e do checkout usa os **shortcodes clássicos**. Caso a página atribuída tenha o bloco Carrinho ou Finalizar compra, troque o conteúdo pelo shortcode correspondente no ambiente de teste para aplicar esse layout. Teste no WordPress a alteração de quantidade, remoção, cupom, cálculo e escolha de frete e o gateway ativo antes de publicar. O tema não cria pedidos de teste automaticamente.
 
+### Quando o carrinho ou checkout ainda mostra o Elementor
+
+Escolher as páginas em **WooCommerce → Configurações → Avançado** define apenas os endereços comerciais. O layout também depende do **modelo** e do **conteúdo** de cada página. Uma página com modelo `Elementor Full Width` ou `Elementor Canvas` ignora o `page.php` do tema; o checkout criado como widget Elementor não usa o template de checkout LucyMary.
+
+1. Em **Páginas → Todas as páginas → Carrinho → Editar**, escolha o modelo **Padrão** na barra lateral do editor e deixe apenas `[woocommerce_cart]` no conteúdo. Salve.
+2. Em **Páginas → Todas as páginas → Finalização de compra → Editar**, escolha **Padrão** e deixe apenas `[woocommerce_checkout]`. Salve. Não substitua por widget Elementor ou bloco Checkout se quiser o layout deste tema.
+3. Em **Minha conta**, mantenha o modelo **Padrão** e o shortcode `[woocommerce_my_account]`.
+4. Se o ShopEngine ainda tiver modelos ativos de **Cart** ou **Checkout** em **ShopEngine → Builder Templates**, desative somente esses modelos para que não substituam as páginas. Limpe o cache do LiteSpeed/Hostinger e confira novamente em janela anônima.
+
+Faça backup antes de alterar páginas que já estão publicadas. Valide carrinho, cupom, frete, campos do checkout e Mercado Pago após a troca; a simples seleção da página nas configurações avançadas não verifica o fluxo de pagamento.
+
 O tema inclui overrides dos templates WooCommerce `cart/mini-cart.php` (versão 11.2.0) e `checkout/form-checkout.php` (versão 9.4.0). Após atualizações do WooCommerce, confira em **WooCommerce → Status → Templates** se algum deles ficou desatualizado.
 
 Os favoritos da versão 0.2.9 usam a conta WordPress e não criam uma tabela própria. A lista antiga, salva apenas no navegador pelas versões anteriores do tema, não é importada automaticamente para uma conta.
