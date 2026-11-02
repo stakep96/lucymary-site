@@ -37,13 +37,26 @@
   qa('[data-lm-open]').forEach((button) => button.addEventListener('click', () => openOverlay(button.dataset.lmOpen, button)));
   qa('[data-lm-close]').forEach((button) => button.addEventListener('click', closeOverlay));
 
-  const favoriteKey = 'lucymary-favorites-v1';
   const favoriteList = q('.lm-favorites-list');
   const favoriteToast = q('.lm-favorite-toast');
+  const favoriteLoginDialog = q('.lm-favorite-login-dialog');
+  let favoriteAccount = !!lucymaryTheme.favoriteAccount;
+  let favoriteNonce = '';
+  let favoritesLoaded = false;
+  let favoritesLoading = null;
+  let favorites = [];
   let favoriteToastTimer;
-  function showFavoriteToast(message) {
+  function showFavoriteLogin() {
+    if (favoriteLoginDialog?.showModal && !favoriteLoginDialog.open) favoriteLoginDialog.showModal();
+  }
+  q('.lm-favorite-login-close')?.addEventListener('click', () => favoriteLoginDialog.close());
+  favoriteLoginDialog?.addEventListener('click', (event) => {
+    if (event.target === favoriteLoginDialog) favoriteLoginDialog.close();
+  });
+  function showFavoriteToast(message, isError = false) {
     if (!favoriteToast) return;
     q('.lm-favorite-toast-copy', favoriteToast).textContent = message;
+    q('[data-lm-open="favorites"]', favoriteToast).hidden = isError;
     favoriteToast.hidden = false;
     window.clearTimeout(favoriteToastTimer);
     favoriteToastTimer = window.setTimeout(() => { favoriteToast.hidden = true; }, 5000);
@@ -52,13 +65,6 @@
     window.clearTimeout(favoriteToastTimer);
     favoriteToast.hidden = true;
   });
-  function readFavorites() {
-    try {
-      const items = JSON.parse(localStorage.getItem(favoriteKey) || '[]');
-      return Array.isArray(items) ? items.filter((item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.url === 'string').slice(0, 100) : [];
-    } catch { return []; }
-  }
-  let favorites = readFavorites();
   function syncFavoriteButtons() {
     qa('[data-lm-favorite]').forEach((button) => {
       const saved = favorites.some((item) => item.id === button.dataset.lmFavorite);
@@ -70,6 +76,17 @@
   function renderFavorites() {
     if (!favoriteList) return;
     favoriteList.replaceChildren();
+    if (!favoriteAccount) {
+      const prompt = document.createElement('p'); prompt.className = 'lm-favorites-empty'; prompt.textContent = copy.favoriteLogin;
+      const link = q('.lm-favorite-login-dialog a')?.cloneNode(true);
+      favoriteList.appendChild(prompt);
+      if (link) { link.className = 'lm-favorites-login-link'; favoriteList.appendChild(link); }
+      return;
+    }
+    if (!favoritesLoaded) {
+      const loading = document.createElement('p'); loading.className = 'lm-favorites-empty'; loading.textContent = copy.favoriteLoading;
+      favoriteList.appendChild(loading); return;
+    }
     if (!favorites.length) {
       const empty = document.createElement('p'); empty.className = 'lm-favorites-empty'; empty.textContent = copy.favoriteEmpty;
       favoriteList.appendChild(empty); return;
@@ -87,28 +104,72 @@
       row.append(imageLink, title, remove); favoriteList.appendChild(row);
     }
   }
-  function saveFavorites() {
-    try { localStorage.setItem(favoriteKey, JSON.stringify(favorites)); } catch { /* Favorites remain available for this visit. */ }
-    syncFavoriteButtons(); renderFavorites();
+  async function loadFavorites(force = false, promptOnAuth = false) {
+    if (!favoriteAccount) { renderFavorites(); return false; }
+    if (favoritesLoaded && !force) return true;
+    if (favoritesLoading) return favoritesLoading;
+    favoritesLoading = (async () => {
+      const url = new URL(lucymaryTheme.ajaxUrl, window.location.href);
+      url.searchParams.set('action', 'lucymary_favorites_list');
+      const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+      if (response.status === 401) {
+        favoriteAccount = false;
+        favorites = [];
+        favoritesLoaded = false;
+        syncFavoriteButtons(); renderFavorites();
+        if (promptOnAuth) showFavoriteLogin();
+        return false;
+      }
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.data?.message || copy.favoriteError);
+      favorites = Array.isArray(result.data?.items) ? result.data.items : [];
+      favoriteNonce = result.data?.nonce || '';
+      favoritesLoaded = true;
+      syncFavoriteButtons(); renderFavorites();
+      return true;
+    })();
+    try { return await favoritesLoading; } finally { favoritesLoading = null; }
   }
-  qa('[data-lm-favorite]').forEach((button) => button.addEventListener('click', (event) => {
+  async function updateFavorite(id, operation, retry = true) {
+    if (!favoriteAccount) { showFavoriteLogin(); return false; }
+    if (!await loadFavorites()) return false;
+    const body = new URLSearchParams({ action: 'lucymary_favorites_update', nonce: favoriteNonce, product_id: id, operation });
+    const response = await fetch(lucymaryTheme.ajaxUrl, { method: 'POST', body, credentials: 'same-origin', cache: 'no-store' });
+    if (response.status === 401) { favoriteAccount = false; renderFavorites(); showFavoriteLogin(); return false; }
+    if (response.status === 403 && retry) { await loadFavorites(true); return updateFavorite(id, operation, false); }
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.data?.message || copy.favoriteError);
+    favorites = Array.isArray(result.data?.items) ? result.data.items : [];
+    syncFavoriteButtons(); renderFavorites();
+    showFavoriteToast(operation === 'add' ? copy.favoriteAdded : copy.favoriteRemoved);
+    return true;
+  }
+  qa('[data-lm-favorite]').forEach((button) => button.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const id = button.dataset.lmFavorite;
-    const wasSaved = favorites.some((item) => item.id === id);
-    if (wasSaved) favorites = favorites.filter((item) => item.id !== id);
-    else favorites.unshift({ id, name: button.dataset.name, url: button.dataset.url, image: button.dataset.image || '' });
-    saveFavorites();
-    showFavoriteToast(wasSaved ? copy.favoriteRemoved : copy.favoriteAdded);
+    if (button.disabled) return;
+    if (!favoriteAccount) { showFavoriteLogin(); return; }
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    try {
+      if (!await loadFavorites(false, true)) return;
+      const operation = favorites.some((item) => item.id === button.dataset.lmFavorite) ? 'remove' : 'add';
+      await updateFavorite(button.dataset.lmFavorite, operation);
+    } catch (error) { showFavoriteToast(error.message || copy.favoriteError, true); }
+    finally { button.disabled = false; button.removeAttribute('aria-busy'); }
   }));
-  favoriteList?.addEventListener('click', (event) => {
+  favoriteList?.addEventListener('click', async (event) => {
     const remove = event.target.closest('[data-lm-favorite-remove]');
     if (!remove) return;
     event.preventDefault();
-    favorites = favorites.filter((item) => item.id !== remove.dataset.lmFavoriteRemove);
-    saveFavorites();
-    showFavoriteToast(copy.favoriteRemoved);
+    if (remove.disabled) return;
+    remove.disabled = true;
+    try { await updateFavorite(remove.dataset.lmFavoriteRemove, 'remove'); }
+    catch (error) { showFavoriteToast(error.message || copy.favoriteError, true); remove.disabled = false; }
   });
+  qa('[data-lm-open="favorites"]').forEach((button) => button.addEventListener('click', () => {
+    loadFavorites().catch((error) => { favoriteList.textContent = error.message || copy.favoriteError; });
+  }));
   // Some older wishlist plugins add a second, icon-only heart before the quantity.
   // Keep their other product controls intact and leave the LucyMary favorite as the only heart.
   function hideLegacyProductHearts() {
@@ -131,8 +192,8 @@
   }
   hideLegacyProductHearts();
   if (window.jQuery) window.jQuery(document.body).on('found_variation', hideLegacyProductHearts);
-  window.addEventListener('storage', (event) => { if (event.key === favoriteKey) { favorites = readFavorites(); syncFavoriteButtons(); renderFavorites(); } });
   syncFavoriteButtons(); renderFavorites();
+  if (favoriteAccount) loadFavorites().catch((error) => { favoriteList.textContent = error.message || copy.favoriteError; });
 
   if (window.jQuery) window.jQuery(document.body).on('added_to_cart', (_event, _fragments, _hash, button) => {
     if (button?.hasClass?.('lm-card-cart')) openOverlay('cart', q('.lm-bag-button'));

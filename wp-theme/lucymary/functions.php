@@ -9,8 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.8' );
+define( 'LUCYMARY_VERSION', '0.2.9' );
 require_once __DIR__ . '/inc/language.php';
+require_once __DIR__ . '/inc/favorites.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
 function lucymary_ui_translation( $translated, $original, $domain ) {
@@ -60,6 +61,7 @@ function lucymary_assets() {
 		'ajaxUrl' => 'en' === lucymary_language() ? add_query_arg( 'lm_lang', 'en', admin_url( 'admin-ajax.php' ) ) : admin_url( 'admin-ajax.php' ),
 		'shippingNonce' => wp_create_nonce( 'lucymary_shipping' ),
 		'cartNonce' => wp_create_nonce( 'lucymary_cart_quantity' ),
+		'favoriteAccount' => is_user_logged_in(),
 		'currencySymbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : 'R$',
 		'strings' => array(
 			'searchMin' => __( 'Digite ao menos duas letras para encontrar produtos.', 'lucymary' ),
@@ -88,6 +90,9 @@ function lucymary_assets() {
 			'favoriteAdded' => __( 'Peça salva nos favoritos.', 'lucymary' ),
 			'favoriteRemoved' => __( 'Peça removida dos favoritos.', 'lucymary' ),
 			'favoriteEmpty' => __( 'Nenhuma peça salva ainda.', 'lucymary' ),
+			'favoriteLogin' => __( 'Entre na sua conta para salvar peças nos favoritos.', 'lucymary' ),
+			'favoriteLoading' => __( 'Carregando favoritos…', 'lucymary' ),
+			'favoriteError' => __( 'Não foi possível atualizar seus favoritos. Tente novamente.', 'lucymary' ),
 		),
 		'rulerIcon' => lucymary_icon( 'ruler', 17 ),
 	) );

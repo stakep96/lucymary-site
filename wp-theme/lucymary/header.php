@@ -52,7 +52,7 @@ $categories = lucymary_category_navigation_items();
   <aside class="lm-drawer lm-favorites-drawer" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Favoritos', 'lucymary' ); ?>">
     <div class="lm-drawer-heading"><h2><?php esc_html_e( 'Favoritos', 'lucymary' ); ?></h2><button type="button" class="lm-icon-button" data-lm-close aria-label="<?php esc_attr_e( 'Fechar favoritos', 'lucymary' ); ?>"><?php echo lucymary_icon( 'close', 22 ); ?></button></div>
     <div class="lm-favorites-list" aria-live="polite"></div>
-    <p class="lm-favorites-note"><?php esc_html_e( 'Salvos neste navegador.', 'lucymary' ); ?></p>
+    <p class="lm-favorites-note"><?php esc_html_e( 'Salvos na sua conta LucyMary.', 'lucymary' ); ?></p>
   </aside>
 </div>
 
@@ -75,4 +75,5 @@ $categories = lucymary_category_navigation_items();
   </div>
 </div>
 <div class="lm-favorite-toast" role="status" aria-live="polite" hidden><span class="lm-favorite-toast-copy"></span><button type="button" data-lm-open="favorites" aria-controls="lm-favorites-drawer" aria-expanded="false"><?php esc_html_e( 'Ver favoritos', 'lucymary' ); ?></button><button type="button" class="lm-favorite-toast-close" aria-label="<?php esc_attr_e( 'Fechar', 'lucymary' ); ?>"><?php echo lucymary_icon( 'close', 16 ); ?></button></div>
+<dialog class="lm-favorite-login-dialog" aria-labelledby="lm-favorite-login-title"><button type="button" class="lm-favorite-login-close" aria-label="<?php esc_attr_e( 'Fechar', 'lucymary' ); ?>"><?php echo lucymary_icon( 'close', 20 ); ?></button><span class="lm-eyebrow">LucyMary</span><h2 id="lm-favorite-login-title"><?php esc_html_e( 'Sua lista de desejos', 'lucymary' ); ?></h2><p><?php esc_html_e( 'Entre na sua conta para salvar esta peça e ver seus favoritos em qualquer dispositivo.', 'lucymary' ); ?></p><a href="<?php echo esc_url( $account_url ); ?>"><?php esc_html_e( 'Entrar ou criar conta', 'lucymary' ); ?></a></dialog>
 <main id="conteudo">
