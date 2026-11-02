@@ -31,7 +31,7 @@ Essa implementação não gera tradução automática. Complete os campos em ing
 
 1. Faça um backup de arquivos e banco do WordPress. Não substitua a instalação de produção como primeiro teste.
 2. Instale o WooCommerce e confirme que as páginas **Loja**, **Carrinho**, **Finalizar compra** e **Minha conta** estão atribuídas em WooCommerce → Configurações → Avançado.
-3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.11.zip`).
+3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.12.zip`).
 4. Em um ambiente de teste, vá a Aparência → Temas → Adicionar novo → Enviar tema e instale esse ZIP. Ele contém a pasta `lucymary/` no nível correto.
 5. Com ShopEngine ainda ativo, templates do próprio ShopEngine podem continuar sobrepondo os do tema. Desative **somente o ShopEngine no ambiente de teste** após conferir suas seis páginas ativas. Teste home, loja, categoria, produto simples e variável, busca, carrinho, cupom, CEP, checkout e minha conta.
 6. Valide o plugin Mercado Pago Checkout Pro no checkout real do WooCommerce com o procedimento de teste autorizado da loja. O botão **Comprar agora** adiciona o produto e redireciona para o checkout do WooCommerce; o tema não confirma pagamento por URL de retorno nem cria pedidos diretamente.
@@ -49,6 +49,10 @@ Escolher as páginas em **WooCommerce → Configurações → Avançado** define
 2. Em **Páginas → Todas as páginas → Finalização de compra → Editar**, escolha **Padrão**, adicione o bloco **Código curto**, cole `[woocommerce_checkout]` e clique em **Salvar**. Não substitua por widget Elementor ou bloco Checkout se quiser o layout deste tema.
 3. Em **Minha conta**, mantenha o modelo **Padrão** e o shortcode `[woocommerce_my_account]`.
 4. Se o ShopEngine ainda tiver modelos ativos de **Cart** ou **Checkout** em **ShopEngine → Builder Templates**, desative somente esses modelos para que não substituam as páginas. Limpe o cache do LiteSpeed/Hostinger e confira novamente em janela anônima.
+
+O carrinho clássico mantém a lista de produtos à esquerda e os totais/frete à direita. A finalização clássica mantém os campos e métodos de pagamento à esquerda e o resumo do pedido à direita. O tema estiliza essas áreas; o WooCommerce continua responsável por quantidades, cupons, frete, validação, total e pagamento.
+
+**Diagnóstico da loja publicada em 2/11/2026:** a página de carrinho já usa o modelo padrão e o tema LucyMary. A página `/finalizar-compra/` ainda renderiza o modelo `elementor_theme` e as classes `shopengine-template shopengine-checkout`, sem o formulário `lm-checkout-layout` do tema. Instalar somente o ZIP não altera esse modelo do WordPress. Para aplicar o design novo ao checkout, edite **Páginas → Finalização de compra**: em **Página → Modelo**, selecione **Padrão**; substitua o conteúdo Elementor por um único bloco **Código curto** com `[woocommerce_checkout]`; salve. Em **ShopEngine → Builder Templates**, desative o template de Checkout que ainda interceptar essa página. Confirme em **WooCommerce → Configurações → Avançado** que ela continua atribuída como página de finalização. Limpe o cache e valide endereço, frete, cupom e Mercado Pago antes de receber pedidos.
 
 Faça backup antes de alterar páginas que já estão publicadas. Valide carrinho, cupom, frete, campos do checkout e Mercado Pago após a troca; a simples seleção da página nas configurações avançadas não verifica o fluxo de pagamento.
 

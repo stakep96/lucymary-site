@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.11' );
+define( 'LUCYMARY_VERSION', '0.2.12' );
 require_once __DIR__ . '/inc/language.php';
 require_once __DIR__ . '/inc/favorites.php';
 
