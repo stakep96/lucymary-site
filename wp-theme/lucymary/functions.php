@@ -9,20 +9,45 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.14' );
+define( 'LUCYMARY_VERSION', '0.2.15' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
 
-/** Keep the native billing phone field and make it required at checkout. */
+/** Keep native checkout fields and add instructions specific to an alternate delivery address. */
 function lucymary_require_billing_phone( $fields ) {
 	if ( isset( $fields['billing']['billing_phone'] ) ) {
 		$fields['billing']['billing_phone']['required'] = true;
 		$fields['billing']['billing_phone']['label'] = __( 'Telefone', 'lucymary' );
 	}
+	$fields['shipping']['shipping_delivery_notes'] = array(
+		'type'        => 'textarea',
+		'label'       => __( 'Observações para entrega', 'lucymary' ),
+		'placeholder' => __( 'Instruções para a entrega neste endereço (opcional).', 'lucymary' ),
+		'required'    => false,
+		'class'       => array( 'form-row-wide' ),
+		'priority'    => 999,
+	);
 	return $fields;
 }
 add_filter( 'woocommerce_checkout_fields', 'lucymary_require_billing_phone', 100 );
+
+/** Persist alternate-address instructions with the WooCommerce order for fulfillment. */
+function lucymary_save_shipping_delivery_notes( $order, $data ) {
+	if ( ! empty( $data['ship_to_different_address'] ) && ! empty( $data['shipping_delivery_notes'] ) ) {
+		$order->update_meta_data( '_shipping_delivery_notes', sanitize_textarea_field( $data['shipping_delivery_notes'] ) );
+	}
+}
+add_action( 'woocommerce_checkout_create_order', 'lucymary_save_shipping_delivery_notes', 10, 2 );
+
+/** Show alternate-address instructions to staff without changing the customer's order notes. */
+function lucymary_admin_shipping_delivery_notes( $order ) {
+	$notes = $order->get_meta( '_shipping_delivery_notes' );
+	if ( $notes ) {
+		echo '<p><strong>' . esc_html__( 'Observações para entrega', 'lucymary' ) . ':</strong><br>' . nl2br( esc_html( $notes ) ) . '</p>';
+	}
+}
+add_action( 'woocommerce_admin_order_data_after_shipping_address', 'lucymary_admin_shipping_delivery_notes' );
 
 /** WooCommerce selects the first gateway when none was chosen; put an available card option first. */
 function lucymary_prefer_card_gateway( $gateways ) {
@@ -140,6 +165,9 @@ function lucymary_assets() {
 		'favoriteAccount' => is_user_logged_in(),
 		'currencySymbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : 'R$',
 		'strings' => array(
+			'paymentCard' => __( 'Cartão', 'lucymary' ),
+			'paymentBoleto' => __( 'Boleto', 'lucymary' ),
+			'paymentPix' => __( 'Pix', 'lucymary' ),
 			'searchMin' => __( 'Digite ao menos duas letras para encontrar produtos.', 'lucymary' ),
 			'searchLoading' => __( 'Buscando produtos…', 'lucymary' ),
 			'searchResults' => __( 'Produtos', 'lucymary' ),

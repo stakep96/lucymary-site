@@ -7,14 +7,29 @@
   if (checkoutDetails) {
     const notes = q('.woocommerce-additional-fields', checkoutDetails);
     const billing = q('.col-1', checkoutDetails);
-    const shippingToggle = q('#ship-to-different-address-checkbox', checkoutDetails);
-    if (notes && billing && shippingToggle) {
+    if (notes && billing) {
       billing.appendChild(notes);
-      const syncNotes = () => { notes.hidden = !shippingToggle.checked; };
-      shippingToggle.addEventListener('change', syncNotes);
-      syncNotes();
+      notes.hidden = false;
     }
   }
+
+  // Shorten only the visible checkout labels; gateway names and payment fields stay intact.
+  function shortPaymentLabels() {
+    qa('.lm-checkout-payment input[name="payment_method"]').forEach((input) => {
+      const label = q('label', input.parentElement);
+      if (!label || label.dataset.lmShortLabel) return;
+      const title = `${label.textContent} ${input.value}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const shortLabel = /pix/.test(title) ? copy.paymentPix : /boleto|loterica|ticket/.test(title) ? copy.paymentBoleto : /cartao|credito|debito|credit|debit|card|mercadopago\.custom/.test(title) ? copy.paymentCard : null;
+      if (!shortLabel) return;
+      const textNode = Array.from(label.childNodes).find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+      if (!textNode) return;
+      label.title = label.textContent.trim();
+      textNode.textContent = shortLabel;
+      label.dataset.lmShortLabel = 'true';
+    });
+  }
+  shortPaymentLabels();
+  if (window.jQuery) window.jQuery(document.body).on('updated_checkout', shortPaymentLabels);
   document.addEventListener('pointerdown', () => document.body.classList.add('lm-pointer-navigation'), true);
   document.addEventListener('keydown', (event) => {
     if (['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) document.body.classList.remove('lm-pointer-navigation');
