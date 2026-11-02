@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.9' );
+define( 'LUCYMARY_VERSION', '0.2.10' );
 require_once __DIR__ . '/inc/language.php';
 require_once __DIR__ . '/inc/favorites.php';
 
@@ -46,6 +46,43 @@ function lucymary_footer_customizer( $customize ) {
 	}
 }
 add_action( 'customize_register', 'lucymary_footer_customizer' );
+
+function lucymary_hero_interval( $value ) {
+	return max( 3, min( 30, (int) $value ) );
+}
+
+function lucymary_hero_customizer( $customize ) {
+	$section = 'lucymary_home_banners';
+	$customize->add_section( $section, array( 'title' => __( 'LucyMary: banners da home', 'lucymary' ), 'priority' => 155 ) );
+	$customize->add_setting( 'lucymary_hero_interval', array( 'default' => 7, 'sanitize_callback' => 'lucymary_hero_interval' ) );
+	$customize->add_control( 'lucymary_hero_interval', array(
+		'label' => __( 'Troca automática (segundos)', 'lucymary' ),
+		'description' => __( 'Entre 3 e 30 segundos. A animação é pausada quando a pessoa interage com o banner.', 'lucymary' ),
+		'section' => $section,
+		'type' => 'number',
+		'input_attrs' => array( 'min' => 3, 'max' => 30, 'step' => 1 ),
+	) );
+	for ( $slot = 1; $slot <= 3; $slot++ ) {
+		foreach ( array( 'desktop' => 'Imagem desktop', 'mobile' => 'Imagem mobile' ) as $device => $label ) {
+			$key = 'lucymary_home_banner_' . $slot . '_' . $device;
+			$customize->add_setting( $key, array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+			$customize->add_control( new WP_Customize_Image_Control( $customize, $key, array(
+				'label' => sprintf( __( 'Banner %1$d: %2$s', 'lucymary' ), $slot, $label ),
+				'section' => $section,
+			) ) );
+		}
+		foreach ( array( 'link' => 'Link', 'alt' => 'Descrição da imagem' ) as $field => $label ) {
+			$key = 'lucymary_home_banner_' . $slot . '_' . $field;
+			$customize->add_setting( $key, array( 'default' => '', 'sanitize_callback' => 'link' === $field ? 'esc_url_raw' : 'sanitize_text_field' ) );
+			$customize->add_control( $key, array(
+				'label' => sprintf( __( 'Banner %1$d: %2$s', 'lucymary' ), $slot, $label ),
+				'section' => $section,
+				'type' => 'link' === $field ? 'url' : 'text',
+			) );
+		}
+	}
+}
+add_action( 'customize_register', 'lucymary_hero_customizer' );
 
 function lucymary_assets() {
 	$base = get_template_directory_uri();
@@ -160,12 +197,14 @@ function lucymary_category_navigation_items() {
 }
 
 function lucymary_category_image( $term ) {
+	$thumbnail_id = (int) get_term_meta( $term->term_id, 'thumbnail_id', true );
+	$image_url = $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'woocommerce_thumbnail' ) : false;
+	if ( $image_url ) { return $image_url; }
 	$images = array( 'aliancas' => 'aliancas.png', 'aneis' => 'aneis.png', 'brincos' => 'brincos.png', 'canetas' => 'canetas.png', 'colares' => 'colares.png', 'cordoes' => 'cordoes.png', 'perfumes' => 'perfumes.png', 'pingentes' => 'pingentes-2.png', 'pulseiras' => 'pulseiras.png', 'relogios' => 'relogios.png' );
 	if ( isset( $images[ $term->slug ] ) ) {
 		return lucymary_asset( 'brand/categorias/' . $images[ $term->slug ] );
 	}
-	$thumbnail_id = (int) get_term_meta( $term->term_id, 'thumbnail_id', true );
-	return $thumbnail_id ? wp_get_attachment_image_url( $thumbnail_id, 'woocommerce_thumbnail' ) : '';
+	return '';
 }
 
 function lucymary_icon( $name, $size = 20 ) {
@@ -220,7 +259,7 @@ function lucymary_product_card( $product ) {
 			<div class="lm-product-actions">
 				<button class="lm-card-favorite" type="button" data-lm-favorite="<?php echo (int) $product->get_id(); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>" data-url="<?php echo esc_url( $url ); ?>" data-image="<?php echo esc_url( $image_url ?: '' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Salvar %s nos favoritos', 'lucymary' ), $product->get_name() ) ); ?>" aria-pressed="false" title="<?php esc_attr_e( 'Salvar nos favoritos', 'lucymary' ); ?>"><?php echo lucymary_icon( 'heart', 19 ); ?></button>
 				<?php if ( $can_add ) : ?>
-				<a class="lm-card-cart<?php echo $ajax_add ? ' add_to_cart_button ajax_add_to_cart product_type_simple' : ''; ?>" href="<?php echo esc_url( $ajax_add ? $product->add_to_cart_url() : $url ); ?>" data-product_id="<?php echo (int) $product->get_id(); ?>" data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>" data-quantity="1" aria-label="<?php echo esc_attr( $ajax_add ? sprintf( __( 'Adicionar %s à sacola', 'lucymary' ), $product->get_name() ) : sprintf( __( 'Escolher opções de %s', 'lucymary' ), $product->get_name() ) ); ?>" title="<?php echo esc_attr( $ajax_add ? __( 'Adicionar à sacola', 'lucymary' ) : __( 'Escolher opções', 'lucymary' ) ); ?>"<?php if ( $ajax_add ) : ?> rel="nofollow"<?php endif; ?>><?php echo lucymary_icon( 'cart', 19 ); ?></a>
+				<a class="lm-card-cart<?php echo $ajax_add ? ' add_to_cart_button ajax_add_to_cart product_type_simple' : ''; ?>" href="<?php echo esc_url( $ajax_add ? $product->add_to_cart_url() : $url ); ?>" data-product_id="<?php echo (int) $product->get_id(); ?>" data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>" data-quantity="1" aria-label="<?php echo esc_attr( $ajax_add ? sprintf( __( 'Adicionar %s à sacola', 'lucymary' ), $product->get_name() ) : sprintf( __( 'Escolher opções de %s', 'lucymary' ), $product->get_name() ) ); ?>" title="<?php echo esc_attr( $ajax_add ? __( 'Adicionar à sacola', 'lucymary' ) : __( 'Escolher opções', 'lucymary' ) ); ?>"<?php if ( $ajax_add ) : ?> rel="nofollow"<?php endif; ?>><?php echo lucymary_icon( 'handbag', 19 ); ?></a>
 				<?php endif; ?>
 			</div>
 		</div>

@@ -7,12 +7,19 @@ $slides = array(
 	array( 'desktop' => 'banner-b2b.png', 'mobile' => 'banner-b2b-mobile.png', 'alt' => __( 'Condições exclusivas para lojistas em compras B2B.', 'lucymary' ), 'slug' => '' ),
 );
 ?>
-<section class="lm-hero" aria-label="<?php esc_attr_e( 'Destaques LucyMary', 'lucymary' ); ?>"><div class="lm-hero-slides">
+<section class="lm-hero" data-interval="<?php echo esc_attr( lucymary_hero_interval( get_theme_mod( 'lucymary_hero_interval', 7 ) ) ); ?>" aria-label="<?php esc_attr_e( 'Destaques LucyMary', 'lucymary' ); ?>"><div class="lm-hero-slides">
 <?php foreach ( $slides as $index => $slide ) :
 	$term = $slide['slug'] ? get_term_by( 'slug', $slide['slug'], 'product_cat' ) : false;
-	$link = $term ? get_term_link( $term ) : home_url( '/#contato' );
+	$default_link = $term ? get_term_link( $term ) : home_url( '/#contato' );
+	$slot = $index + 1;
+	$desktop_custom = get_theme_mod( 'lucymary_home_banner_' . $slot . '_desktop', '' );
+	$desktop = $desktop_custom ?: lucymary_asset( 'brand/' . $slide['desktop'] );
+	$mobile = get_theme_mod( 'lucymary_home_banner_' . $slot . '_mobile', '' );
+	if ( ! $mobile ) { $mobile = $desktop_custom ? $desktop : lucymary_asset( 'brand/' . $slide['mobile'] ); }
+	$link = get_theme_mod( 'lucymary_home_banner_' . $slot . '_link', '' ) ?: ( is_wp_error( $default_link ) ? home_url( '/' ) : $default_link );
+	$alt = get_theme_mod( 'lucymary_home_banner_' . $slot . '_alt', '' ) ?: $slide['alt'];
 	?>
-	<a class="lm-hero-slide<?php echo 0 === $index ? ' is-active' : ''; ?>" href="<?php echo esc_url( $link ); ?>" <?php echo $index ? 'aria-hidden="true" tabindex="-1"' : ''; ?>><picture><source media="(max-width: 640px)" srcset="<?php echo esc_url( lucymary_asset( 'brand/' . $slide['mobile'] ) ); ?>"><img src="<?php echo esc_url( lucymary_asset( 'brand/' . $slide['desktop'] ) ); ?>" alt="<?php echo esc_attr( $slide['alt'] ); ?>" width="1600" height="286" <?php echo $index ? 'loading="lazy"' : 'fetchpriority="high"'; ?>></picture></a>
+	<a class="lm-hero-slide<?php echo 0 === $index ? ' is-active' : ''; ?>" href="<?php echo esc_url( $link ); ?>" <?php echo $index ? 'aria-hidden="true" tabindex="-1"' : ''; ?>><picture><source media="(max-width: 640px)" srcset="<?php echo esc_url( $mobile ); ?>"><img src="<?php echo esc_url( $desktop ); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="1600" height="286" <?php echo $index ? 'loading="lazy"' : 'fetchpriority="high"'; ?>></picture></a>
 <?php endforeach; ?>
 <button type="button" class="lm-hero-arrow lm-hero-prev" aria-label="<?php esc_attr_e( 'Banner anterior', 'lucymary' ); ?>"><?php echo lucymary_icon( 'chevron-left', 24 ); ?></button><button type="button" class="lm-hero-arrow lm-hero-next" aria-label="<?php esc_attr_e( 'Próximo banner', 'lucymary' ); ?>"><?php echo lucymary_icon( 'chevron-right', 24 ); ?></button></div><div class="lm-hero-dots" aria-label="<?php esc_attr_e( 'Escolher banner', 'lucymary' ); ?>"><?php foreach ( $slides as $index => $slide ) : ?><button type="button" class="<?php echo 0 === $index ? 'is-active' : ''; ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Mostrar banner %d', 'lucymary' ), $index + 1 ) ); ?>" <?php echo 0 === $index ? 'aria-current="true"' : ''; ?>></button><?php endforeach; ?></div></section>
 

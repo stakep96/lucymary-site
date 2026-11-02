@@ -292,6 +292,9 @@
 
   const slides = qa('.lm-hero-slide');
   const dots = qa('.lm-hero-dots button');
+  const hero = q('.lm-hero');
+  const heroTrack = q('.lm-hero-slides');
+  const heroInterval = Math.min(30, Math.max(3, Number(hero?.dataset.interval) || 7)) * 1000;
   let slideIndex = 0, lastSlideAction = 0;
   function showSlide(index) {
     if (!slides.length) return;
@@ -303,10 +306,13 @@
   q('.lm-hero-prev')?.addEventListener('click', () => moveSlide(-1));
   q('.lm-hero-next')?.addEventListener('click', () => moveSlide(1));
   dots.forEach((dot, i) => dot.addEventListener('click', () => { lastSlideAction = Date.now(); showSlide(i); }));
-  if (slides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    window.setInterval(() => { if (!document.hidden && Date.now() - lastSlideAction > 5000) showSlide(slideIndex + 1); }, 7000);
+  if (slides.length > 1) {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.setInterval(() => {
+        if (!document.hidden && !hero?.matches(':hover') && !hero?.contains(document.activeElement) && Date.now() - lastSlideAction >= heroInterval) showSlide(slideIndex + 1);
+      }, heroInterval);
+    }
     let start = null;
-    const heroTrack = q('.lm-hero-slides');
     let suppressHeroClick = false;
     heroTrack?.addEventListener('touchstart', (event) => { start = { x: event.touches[0].clientX, y: event.touches[0].clientY }; }, { passive: true });
     heroTrack?.addEventListener('touchend', (event) => {
