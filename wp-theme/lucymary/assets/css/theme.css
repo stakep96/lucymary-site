@@ -676,6 +676,7 @@ body.woocommerce-cart,body.woocommerce-checkout:has(.lm-checkout-layout){backgro
 
 /* Three compact gateway choices share a row; the selected gateway owns the full-width form below. */
 .woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods::before,.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods::after,.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li::before,.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li::after{content:none;display:none}
 .woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>label{width:100%;min-width:0;box-sizing:border-box;overflow-wrap:normal;word-break:normal}
 .woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>div.payment_box{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box}
 .woocommerce-checkout .lm-checkout-fields .col-2 .shipping_address #shipping_delivery_notes_field{clear:both;width:100%}
