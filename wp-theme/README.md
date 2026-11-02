@@ -31,7 +31,7 @@ Essa implementação não gera tradução automática. Complete os campos em ing
 
 1. Faça um backup de arquivos e banco do WordPress. Não substitua a instalação de produção como primeiro teste.
 2. Instale o WooCommerce e confirme que as páginas **Loja**, **Carrinho**, **Finalizar compra** e **Minha conta** estão atribuídas em WooCommerce → Configurações → Avançado.
-3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.10.zip`).
+3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.11.zip`).
 4. Em um ambiente de teste, vá a Aparência → Temas → Adicionar novo → Enviar tema e instale esse ZIP. Ele contém a pasta `lucymary/` no nível correto.
 5. Com ShopEngine ainda ativo, templates do próprio ShopEngine podem continuar sobrepondo os do tema. Desative **somente o ShopEngine no ambiente de teste** após conferir suas seis páginas ativas. Teste home, loja, categoria, produto simples e variável, busca, carrinho, cupom, CEP, checkout e minha conta.
 6. Valide o plugin Mercado Pago Checkout Pro no checkout real do WooCommerce com o procedimento de teste autorizado da loja. O botão **Comprar agora** adiciona o produto e redireciona para o checkout do WooCommerce; o tema não confirma pagamento por URL de retorno nem cria pedidos diretamente.
@@ -45,8 +45,8 @@ O novo desenho do carrinho e do checkout usa os **shortcodes clássicos**. Caso 
 
 Escolher as páginas em **WooCommerce → Configurações → Avançado** define apenas os endereços comerciais. O layout também depende do **modelo** e do **conteúdo** de cada página. Uma página com modelo `Elementor Full Width` ou `Elementor Canvas` ignora o `page.php` do tema; o checkout criado como widget Elementor não usa o template de checkout LucyMary.
 
-1. Em **Páginas → Todas as páginas → Carrinho → Editar**, escolha o modelo **Padrão** na barra lateral do editor e deixe apenas `[woocommerce_cart]` no conteúdo. Salve.
-2. Em **Páginas → Todas as páginas → Finalização de compra → Editar**, escolha **Padrão** e deixe apenas `[woocommerce_checkout]`. Salve. Não substitua por widget Elementor ou bloco Checkout se quiser o layout deste tema.
+1. Em **Páginas → Todas as páginas → Carrinho → Editar**, escolha o modelo **Padrão** na barra lateral. Remova o conteúdo antigo, adicione o bloco **Código curto** (não o bloco **Código**), cole `[woocommerce_cart]` e clique em **Salvar**.
+2. Em **Páginas → Todas as páginas → Finalização de compra → Editar**, escolha **Padrão**, adicione o bloco **Código curto**, cole `[woocommerce_checkout]` e clique em **Salvar**. Não substitua por widget Elementor ou bloco Checkout se quiser o layout deste tema.
 3. Em **Minha conta**, mantenha o modelo **Padrão** e o shortcode `[woocommerce_my_account]`.
 4. Se o ShopEngine ainda tiver modelos ativos de **Cart** ou **Checkout** em **ShopEngine → Builder Templates**, desative somente esses modelos para que não substituam as páginas. Limpe o cache do LiteSpeed/Hostinger e confira novamente em janela anônima.
 

@@ -488,6 +488,7 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .woocommerce-cart .woocommerce-cart-form .actions{padding:17px!important}
 .woocommerce-cart .woocommerce-cart-form .coupon{display:flex;gap:8px;align-items:center;max-width:420px}
 .woocommerce-cart .woocommerce-cart-form .coupon input.input-text{width:180px;min-height:40px;border:1px solid var(--lm-line);padding:0 10px}
+.woocommerce-cart .lm-content-page .woocommerce .woocommerce-cart-form table.shop_table td.actions .coupon input#coupon_code{float:none;width:clamp(160px,18vw,220px);min-width:160px;min-height:40px;box-sizing:border-box}
 .woocommerce-cart .woocommerce-cart-form .coupon .button,.woocommerce-cart .woocommerce-cart-form .actions>.button,.woocommerce-cart .wc-proceed-to-checkout .button{min-height:40px;border-radius:2px;background:var(--lm-wine);color:#fff;font-size:12px}
 .woocommerce-cart .woocommerce-cart-form .actions>.button{background:#fff;color:var(--lm-wine);border:1px solid var(--lm-wine)}
 .woocommerce-cart .cart_totals .shop_table{border:0;background:transparent}
@@ -500,6 +501,8 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .woocommerce-cart .cart_totals .woocommerce-shipping-calculator a{color:var(--lm-wine);text-decoration:underline}
 .woocommerce-cart .wc-proceed-to-checkout{padding:15px 0 0}
 .woocommerce-cart .wc-proceed-to-checkout .button{display:grid;place-items:center;margin:0;padding:14px;font-size:13px}
+.woocommerce-cart .lm-content-page .woocommerce .wc-proceed-to-checkout a.checkout-button.button.alt{background:var(--lm-wine)!important;color:#fff!important;border-color:var(--lm-wine)!important}
+.woocommerce-cart .lm-content-page .woocommerce .wc-proceed-to-checkout a.checkout-button.button.alt:hover{background:#5f0030!important;border-color:#5f0030!important}
 
 .woocommerce-checkout form.lm-checkout-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,390px);align-items:start;gap:clamp(30px,5vw,76px);max-width:1180px;margin:auto}
 .woocommerce-checkout .lm-checkout-fields,.woocommerce-checkout .lm-checkout-summary{min-width:0}
