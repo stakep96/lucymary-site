@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.7' );
+define( 'LUCYMARY_VERSION', '0.2.8' );
 require_once __DIR__ . '/inc/language.php';
 
 /** Translate only theme interface strings; catalog content remains in WordPress. */
@@ -31,7 +31,7 @@ function lucymary_setup() {
 	add_theme_support( 'woocommerce' );
 	add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );
-	register_nav_menus( array( 'institutional' => __( 'Links institucionais', 'lucymary' ), 'footer' => __( 'Rodapé', 'lucymary' ) ) );
+	register_nav_menus( array( 'institutional' => __( 'Links institucionais', 'lucymary' ), 'product_categories' => __( 'Categorias de produtos', 'lucymary' ), 'footer' => __( 'Rodapé', 'lucymary' ) ) );
 	add_image_size( 'lucymary-card', 420, 420, false );
 }
 add_action( 'after_setup_theme', 'lucymary_setup' );
@@ -85,6 +85,8 @@ function lucymary_assets() {
 			'cartQuantityIncrease' => __( 'Aumentar quantidade', 'lucymary' ),
 			'favoriteSave' => __( 'Salvar nos favoritos', 'lucymary' ),
 			'favoriteRemove' => __( 'Remover dos favoritos', 'lucymary' ),
+			'favoriteAdded' => __( 'Peça salva nos favoritos.', 'lucymary' ),
+			'favoriteRemoved' => __( 'Peça removida dos favoritos.', 'lucymary' ),
 			'favoriteEmpty' => __( 'Nenhuma peça salva ainda.', 'lucymary' ),
 		),
 		'rulerIcon' => lucymary_icon( 'ruler', 17 ),
@@ -120,6 +122,36 @@ function lucymary_ordered_categories( $hide_empty = true ) {
 		return ( false === $left ? 99 : $left ) <=> ( false === $right ? 99 : $right );
 	} );
 	return $terms;
+}
+
+/** Use the WordPress category menu order, with a fallback for newly installed stores. */
+function lucymary_category_navigation_items() {
+	$locations = get_nav_menu_locations();
+	$menu = ! empty( $locations['product_categories'] ) ? (int) $locations['product_categories'] : wp_get_nav_menu_object( 'Menu Categorias Produtos' );
+	if ( $menu && ! is_wp_error( $menu ) ) {
+		$menu_items = wp_get_nav_menu_items( $menu );
+		if ( is_array( $menu_items ) && $menu_items ) {
+			$items = array();
+			foreach ( $menu_items as $item ) {
+				$is_category = 'taxonomy' === $item->type && 'product_cat' === $item->object;
+				$term = $is_category ? get_term( (int) $item->object_id, 'product_cat' ) : null;
+				if ( $is_category && ( ! $term || is_wp_error( $term ) ) ) { continue; }
+				$url = $term ? get_term_link( $term ) : lucymary_localize_url( $item->url );
+				if ( is_wp_error( $url ) || ! $url ) { continue; }
+				$title = $term && lucymary_english_request() ? $term->name : $item->title;
+				if ( ! $term && 'todos' === sanitize_title( $title ) ) { $title = __( 'Todos', 'lucymary' ); }
+				$items[] = array( 'title' => $title, 'url' => $url, 'term' => $term );
+			}
+			if ( $items ) { return $items; }
+		}
+	}
+	$items = array();
+	foreach ( lucymary_ordered_categories( false ) as $term ) {
+		$url = get_term_link( $term );
+		if ( ! is_wp_error( $url ) ) { $items[] = array( 'title' => $term->name, 'url' => $url, 'term' => $term ); }
+	}
+	$items[] = array( 'title' => __( 'Todos', 'lucymary' ), 'url' => lucymary_shop_url(), 'term' => null );
+	return $items;
 }
 
 function lucymary_category_image( $term ) {

@@ -443,7 +443,14 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-product-purchase .lm-single-favorite{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;margin:0;padding:0;border:0;border-radius:50%;background:transparent;color:var(--lm-wine)}
 .lm-product-purchase .lm-single-favorite:hover{background:var(--lm-soft)}
 .lm-product-purchase .lm-single-favorite[aria-pressed="true"] svg{fill:currentColor}
-.lm-product-purchase :is(.yith-wcwl-add-to-wishlist,.tinv-wishlist,.woosw-btn,.wpc-wishlist-button){display:none!important}
+.lm-product-purchase :is(.yith-wcwl-add-to-wishlist,.tinv-wishlist,.woosw-btn,.wpc-wishlist-button,[class*="wishlist" i],[class*="wish-list" i],[class*="favorite" i]):not(.lm-single-favorite),.lm-product-purchase [hidden]{display:none!important}
+.lm-favorite-toast{position:fixed;right:24px;bottom:26px;z-index:190;display:flex;align-items:center;gap:15px;max-width:min(430px,calc(100vw - 32px));min-height:58px;padding:12px 14px 12px 18px;border:1px solid var(--lm-line);border-left:3px solid var(--lm-wine);border-radius:5px;background:#fff;box-shadow:0 14px 34px #32102329;color:var(--lm-ink);font-size:13px}
+.lm-favorite-toast[hidden]{display:none}
+.lm-favorite-toast-copy{line-height:1.4}
+.lm-favorite-toast button{flex:none;border:0;background:transparent;color:var(--lm-wine);font:inherit;font-weight:600;cursor:pointer}
+.lm-favorite-toast button:not(.lm-favorite-toast-close){text-decoration:underline;text-underline-offset:3px}
+.lm-favorite-toast .lm-favorite-toast-close{display:grid;place-items:center;width:24px;height:24px;padding:0}
+@media(max-width:640px){.lm-favorite-toast{right:16px;bottom:82px;left:16px;max-width:none;justify-content:space-between}}
 @media(max-width:640px){.lm-product-purchase form.cart:not(.variations_form),.lm-product-purchase .woocommerce-variation-add-to-cart{grid-template-columns:70px minmax(0,1fr) 44px}.lm-product-purchase .quantity{grid-column:1;grid-row:1/3}.lm-product-purchase button.single_add_to_cart_button{grid-column:2/4;grid-row:1}.lm-product-purchase button.lm-buy-now{grid-column:2;grid-row:2}.lm-product-purchase .lm-single-favorite{grid-column:3;grid-row:2;width:44px;height:44px}}
 
 .woocommerce-cart .lm-content-page>.woocommerce:has(>.woocommerce-cart-form){display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);align-items:start;gap:24px 38px}

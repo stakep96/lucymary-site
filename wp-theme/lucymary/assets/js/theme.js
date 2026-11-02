@@ -39,6 +39,19 @@
 
   const favoriteKey = 'lucymary-favorites-v1';
   const favoriteList = q('.lm-favorites-list');
+  const favoriteToast = q('.lm-favorite-toast');
+  let favoriteToastTimer;
+  function showFavoriteToast(message) {
+    if (!favoriteToast) return;
+    q('.lm-favorite-toast-copy', favoriteToast).textContent = message;
+    favoriteToast.hidden = false;
+    window.clearTimeout(favoriteToastTimer);
+    favoriteToastTimer = window.setTimeout(() => { favoriteToast.hidden = true; }, 5000);
+  }
+  q('.lm-favorite-toast-close')?.addEventListener('click', () => {
+    window.clearTimeout(favoriteToastTimer);
+    favoriteToast.hidden = true;
+  });
   function readFavorites() {
     try {
       const items = JSON.parse(localStorage.getItem(favoriteKey) || '[]');
@@ -78,15 +91,46 @@
     try { localStorage.setItem(favoriteKey, JSON.stringify(favorites)); } catch { /* Favorites remain available for this visit. */ }
     syncFavoriteButtons(); renderFavorites();
   }
-  document.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-lm-favorite]');
-    const remove = event.target.closest('[data-lm-favorite-remove]');
-    if (!button && !remove) return;
-    const id = button?.dataset.lmFavorite || remove.dataset.lmFavoriteRemove;
-    if (favorites.some((item) => item.id === id)) favorites = favorites.filter((item) => item.id !== id);
-    else if (button) favorites.unshift({ id, name: button.dataset.name, url: button.dataset.url, image: button.dataset.image || '' });
+  qa('[data-lm-favorite]').forEach((button) => button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const id = button.dataset.lmFavorite;
+    const wasSaved = favorites.some((item) => item.id === id);
+    if (wasSaved) favorites = favorites.filter((item) => item.id !== id);
+    else favorites.unshift({ id, name: button.dataset.name, url: button.dataset.url, image: button.dataset.image || '' });
     saveFavorites();
+    showFavoriteToast(wasSaved ? copy.favoriteRemoved : copy.favoriteAdded);
+  }));
+  favoriteList?.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-lm-favorite-remove]');
+    if (!remove) return;
+    event.preventDefault();
+    favorites = favorites.filter((item) => item.id !== remove.dataset.lmFavoriteRemove);
+    saveFavorites();
+    showFavoriteToast(copy.favoriteRemoved);
   });
+  // Some older wishlist plugins add a second, icon-only heart before the quantity.
+  // Keep their other product controls intact and leave the LucyMary favorite as the only heart.
+  function hideLegacyProductHearts() {
+    qa('.lm-product-purchase').forEach((purchase) => {
+      const quantity = q('.quantity', purchase);
+      if (!quantity) return;
+      qa('button, a', purchase).forEach((control) => {
+        if (control.matches('.lm-single-favorite, .single_add_to_cart_button, .lm-buy-now')) return;
+        const descriptor = `${control.className || ''} ${control.getAttribute('aria-label') || ''} ${control.getAttribute('title') || ''}`.toLowerCase();
+        const namedHeart = /wishlist|wish-list|favorite|favorit|heart/.test(descriptor);
+        const beforeQuantity = !!(control.compareDocumentPosition(quantity) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const iconOnly = control.textContent.trim().length <= 2 && !!q('svg, i, [class*="icon"]', control);
+        if (namedHeart || (beforeQuantity && iconOnly && control.getBoundingClientRect().width <= 54)) {
+          control.hidden = true;
+          control.setAttribute('aria-hidden', 'true');
+          control.tabIndex = -1;
+        }
+      });
+    });
+  }
+  hideLegacyProductHearts();
+  if (window.jQuery) window.jQuery(document.body).on('found_variation', hideLegacyProductHearts);
   window.addEventListener('storage', (event) => { if (event.key === favoriteKey) { favorites = readFavorites(); syncFavoriteButtons(); renderFavorites(); } });
   syncFavoriteButtons(); renderFavorites();
 
