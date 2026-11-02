@@ -682,3 +682,13 @@ body.woocommerce-cart,body.woocommerce-checkout:has(.lm-checkout-layout){backgro
 .woocommerce-checkout .lm-checkout-fields .col-2 .shipping_address #shipping_delivery_notes_field{clear:both;width:100%}
 .woocommerce-checkout .lm-checkout-fields .col-2 .shipping_address #shipping_delivery_notes{min-height:88px}
 @media(max-width:640px){.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>label{min-width:0;padding:8px 5px;font-size:10px}}
+
+/* Shipping methods use the full order-summary width instead of the price column. */
+.woocommerce-checkout .lm-checkout-summary table.shop_table tr.woocommerce-shipping-totals.shipping{display:block;width:100%}
+.woocommerce-checkout .lm-checkout-summary table.shop_table tr.woocommerce-shipping-totals.shipping th,.woocommerce-checkout .lm-checkout-summary table.shop_table tr.woocommerce-shipping-totals.shipping td{display:block;box-sizing:border-box;width:100%;min-width:0;text-align:left}
+.woocommerce-checkout .lm-checkout-summary table.shop_table tr.woocommerce-shipping-totals.shipping th{padding-bottom:0}
+.woocommerce-checkout .lm-checkout-summary table.shop_table tr.woocommerce-shipping-totals.shipping td{padding-top:6px}
+.woocommerce-checkout .lm-checkout-summary #shipping_method{width:100%;margin:0;padding:0;list-style:none}
+.woocommerce-checkout .lm-checkout-summary #shipping_method li{display:grid;grid-template-columns:16px minmax(0,1fr);align-items:start;gap:8px;width:100%;margin:0 0 8px;text-align:left}
+.woocommerce-checkout .lm-checkout-summary #shipping_method li input{margin:3px 0 0}
+.woocommerce-checkout .lm-checkout-summary #shipping_method label{display:block;width:100%;margin:0;overflow-wrap:normal;word-break:normal;line-height:1.5;text-align:left}

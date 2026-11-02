@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.16' );
+define( 'LUCYMARY_VERSION', '0.2.17' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
