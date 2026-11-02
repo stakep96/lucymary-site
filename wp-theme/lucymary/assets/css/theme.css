@@ -597,3 +597,51 @@ body.woocommerce-cart,body.woocommerce-checkout:has(.lm-checkout-layout){backgro
 @media(max-width:640px){.woocommerce-cart .lm-content-page,.woocommerce-checkout .lm-content-page{padding-top:26px;padding-bottom:64px}.woocommerce-cart .lm-content-page>.woocommerce:has(>.woocommerce-cart-form){gap:18px}.woocommerce-cart .woocommerce-cart-form table.shop_table td{padding:12px}.woocommerce-cart .woocommerce-cart-form .actions{padding:15px!important}.woocommerce-cart .woocommerce-cart-form .coupon{float:none;width:100%;flex-wrap:wrap}.woocommerce-cart .woocommerce .cart-collaterals .cart_totals,.woocommerce-checkout .lm-checkout-summary{padding:20px}.woocommerce-checkout .lm-checkout-fields #customer_details .col-1,.woocommerce-checkout .lm-checkout-fields #customer_details .col-2{padding:20px}.woocommerce-checkout .lm-checkout-fields #payment{padding:18px}}
 @media(max-width:900px){.woocommerce-cart .lm-content-page>.woocommerce:has(>.woocommerce-cart-form),.woocommerce-checkout form.lm-checkout-layout{grid-template-columns:1fr}.woocommerce-cart .woocommerce .cart-collaterals{grid-column:1}.woocommerce-checkout .lm-checkout-summary{position:static}}
 @media(max-width:640px){.lm-cart-drawer{width:min(380px,calc(100vw - 56px))}.lm-mini-cart-content{padding:4px 17px 12px}.lm-mini-cart-content .lm-mini-cart-item{grid-template-columns:64px minmax(0,1fr);gap:10px}.lm-mini-cart-content .lm-mini-cart-image img{width:64px;height:64px}.lm-mini-cart-title-row{grid-template-columns:1fr;gap:2px}.lm-mini-cart-price{white-space:normal}.woocommerce-cart .woocommerce-cart-form .coupon{flex-wrap:wrap}.woocommerce-cart .woocommerce-cart-form .coupon input.input-text{width:160px}.woocommerce-cart .woocommerce .cart-collaterals .cart_totals,.woocommerce-checkout .lm-checkout-summary{padding:18px}.woocommerce-checkout form.lm-checkout-layout{gap:28px}}
+
+/* Keep the navigation white over the cart and checkout page backgrounds. */
+.lm-category-strip{width:100%;background:#fff}
+.lm-category-strip .lm-category-nav{background:#fff}
+
+/* Cart totals retain row dividers without an inner frame. */
+.woocommerce-cart .lm-content-page .woocommerce .cart_totals table.shop_table{border:0!important;border-collapse:collapse;background:transparent;box-shadow:none}
+.woocommerce-cart .cart_totals tr.woocommerce-shipping-totals.shipping{display:block;width:100%}
+.woocommerce-cart .cart_totals tr.woocommerce-shipping-totals.shipping th,.woocommerce-cart .cart_totals tr.woocommerce-shipping-totals.shipping td{display:block;width:100%;padding-right:0;padding-left:0;text-align:left}
+.woocommerce-cart .cart_totals tr.woocommerce-shipping-totals.shipping th{padding-bottom:0}
+.woocommerce-cart .cart_totals tr.woocommerce-shipping-totals.shipping td{padding-top:4px}
+.woocommerce-cart .cart_totals .woocommerce-shipping-destination,.woocommerce-cart .cart_totals .woocommerce-shipping-calculator{margin-left:0;text-align:left}
+.woocommerce-cart .cart_totals .woocommerce-shipping-calculator .form-row{float:none;width:100%;margin-left:0}
+.woocommerce-cart .cart_totals .woocommerce-shipping-calculator input{width:100%}
+.woocommerce-cart .lm-content-page .woocommerce .wc-proceed-to-checkout a.checkout-button.button.alt{display:flex!important;align-items:center;justify-content:center;text-align:center!important}
+
+/* Coupon stays a separate WooCommerce form; the other panels remain inside form.checkout. */
+.woocommerce-checkout .lm-checkout-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,390px);column-gap:clamp(24px,4vw,52px);row-gap:18px;align-items:start}
+.woocommerce-checkout .lm-checkout-form{display:contents}
+.woocommerce-checkout .lm-checkout-fields{grid-column:1;grid-row:1 / span 3;min-width:0}
+.woocommerce-checkout .lm-checkout-summary{grid-column:2;grid-row:1;position:static;min-width:0}
+.woocommerce-checkout .lm-checkout-coupon{grid-column:2;grid-row:2;min-width:0;padding:20px 24px;border:1px solid #eee8e8;border-radius:10px;background:#fff;box-shadow:0 10px 28px #32102308}
+.woocommerce-checkout .lm-checkout-payment{grid-column:2;grid-row:3;min-width:0;padding:20px 24px;border:1px solid #eee8e8;border-radius:10px;background:#fff;box-shadow:0 10px 28px #32102308}
+.woocommerce-checkout .lm-checkout-coupon h2,.woocommerce-checkout .lm-checkout-payment-heading h2{margin:0 0 12px;color:var(--lm-wine);font-size:18px;font-weight:500}
+.woocommerce-checkout .lm-checkout-payment-heading{margin:0 0 16px}
+.woocommerce-checkout .lm-checkout-payment-heading p{margin:0;color:var(--lm-muted);font-size:12px}
+.woocommerce-checkout .lm-checkout-coupon .woocommerce-form-coupon-toggle{display:none}
+.woocommerce-checkout .lm-checkout-coupon form.checkout_coupon{display:flex!important;flex-wrap:wrap;align-items:end;gap:10px;margin:0;padding:0;border:0;box-shadow:none}
+.woocommerce-checkout .lm-checkout-coupon form.checkout_coupon>p:not(.form-row){flex-basis:100%;margin:0;color:var(--lm-muted);font-size:11px}
+.woocommerce-checkout .lm-checkout-coupon form.checkout_coupon .form-row{float:none;width:auto;margin:0;padding:0}
+.woocommerce-checkout .lm-checkout-coupon form.checkout_coupon .form-row-first{flex:1 1 150px}
+.woocommerce-checkout .lm-checkout-coupon form.checkout_coupon input.input-text{width:100%;min-height:43px;padding:9px 11px;border:1px solid #ded5d8;border-radius:4px}
+.woocommerce-checkout .lm-checkout-coupon form.checkout_coupon button.button{min-height:43px;padding:0 14px;border-radius:4px;background:var(--lm-wine);color:#fff;font-size:11px}
+.woocommerce-checkout .lm-checkout-payment #payment{float:none;width:100%;padding:0;border:0;background:transparent;box-shadow:none}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0 0 14px;border:0;background:transparent}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li{display:contents;border:0;background:transparent}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>input[name=payment_method]{position:absolute;width:1px;height:1px;opacity:0;clip-path:inset(50%)}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>label{order:0;display:flex;flex:1 1 calc((100% - 16px)/3);flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:95px;min-height:72px;margin:0;padding:10px;border:1px solid #e8dfe2;border-radius:6px;background:#fff;color:var(--lm-ink);font-size:11px;font-weight:600;line-height:1.3;cursor:pointer;overflow-wrap:anywhere}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>input[name=payment_method]:checked+label{border-color:var(--lm-wine);box-shadow:inset 0 0 0 1px var(--lm-wine);background:#fdf9fb}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>input[name=payment_method]:focus-visible+label{outline:2px solid var(--lm-wine);outline-offset:2px}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>label img{max-width:100%;max-height:21px;margin:0;object-fit:contain}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>div.payment_box{order:1;flex:0 0 100%;margin:2px 0 0;padding:15px;border-radius:5px;background:#faf7f9;color:var(--lm-ink)}
+.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li:not(:has(>input[name=payment_method]:checked))>div.payment_box{display:none!important}
+.woocommerce-checkout .lm-checkout-payment #payment div.payment_box::before{display:none}
+.woocommerce-checkout .lm-checkout-payment #payment .place-order{padding:12px 0 0}
+.woocommerce-checkout .lm-checkout-payment #payment #place_order{float:none;width:100%;min-height:50px;border-radius:4px;background:var(--lm-wine)!important;color:#fff!important;font-size:13px;font-weight:600}
+@media(max-width:900px){.woocommerce-checkout .lm-checkout-layout{grid-template-columns:1fr}.woocommerce-checkout .lm-checkout-fields{grid-column:1;grid-row:1}.woocommerce-checkout .lm-checkout-summary{grid-column:1;grid-row:2}.woocommerce-checkout .lm-checkout-coupon{grid-column:1;grid-row:3}.woocommerce-checkout .lm-checkout-payment{grid-column:1;grid-row:4}}
+@media(max-width:640px){.woocommerce-checkout .lm-checkout-coupon,.woocommerce-checkout .lm-checkout-payment{padding:18px}.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>label{min-width:85px;padding:8px;font-size:10px}}

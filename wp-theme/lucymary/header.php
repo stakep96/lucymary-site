@@ -30,9 +30,9 @@ $categories = lucymary_category_navigation_items();
     </div>
   </div>
 </header>
-<nav class="lm-shell lm-category-nav" aria-label="<?php esc_attr_e( 'Categorias principais', 'lucymary' ); ?>">
+<div class="lm-category-strip"><nav class="lm-shell lm-category-nav" aria-label="<?php esc_attr_e( 'Categorias principais', 'lucymary' ); ?>">
     <?php foreach ( $categories as $category ) : ?><a href="<?php echo esc_url( $category['url'] ); ?>"><?php echo esc_html( $category['title'] ); ?></a><?php endforeach; ?>
-</nav>
+</nav></div>
 
 <div class="lm-overlay lm-menu-overlay" id="lm-mobile-menu" data-lm-overlay="menu" aria-hidden="true">
   <button type="button" class="lm-overlay-backdrop" data-lm-close aria-label="<?php esc_attr_e( 'Fechar menu', 'lucymary' ); ?>"></button>

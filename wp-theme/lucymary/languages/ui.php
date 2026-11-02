@@ -18,6 +18,7 @@ return array(
 		'Pagamento' => 'Payment',
 		'Escolha uma das formas disponíveis para concluir sua compra.' => 'Choose an available payment method to complete your purchase.',
 		'Resumo do pedido' => 'Order summary',
+		'Cupom de desconto' => 'Discount code',
 		'%d estrelas' => '%d stars',
 		'A loja está indisponível.' => 'The store is temporarily unavailable.',
 		'A tabela oficial de aros da LucyMary será adicionada aqui em breve.' => 'The official LucyMary ring size chart will be added here soon.',
