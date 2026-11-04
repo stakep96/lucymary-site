@@ -352,6 +352,29 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-footer-legal p+p{margin-top:28px;color:#4d444b}
 .lm-back-to-top{position:fixed;right:24px;bottom:96px;z-index:40;display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--lm-line);border-radius:50%;background:#fff;color:var(--lm-wine);box-shadow:0 5px 18px #3210231a;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease,visibility .2s ease}
 .lm-back-to-top.is-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.lm-whatsapp-widget{position:fixed;right:20px;bottom:20px;z-index:41}
+.lm-whatsapp-toggle{position:relative;display:grid;place-items:center;width:54px;height:54px;border:0;border-radius:50%;background:#075e54;color:#fff;box-shadow:0 6px 20px #1b332a38;transition:transform .2s ease,box-shadow .2s ease}
+.lm-whatsapp-toggle:hover{transform:translateY(-2px);box-shadow:0 9px 24px #1b332a42}
+.lm-whatsapp-toggle svg{width:29px;height:29px}
+.lm-whatsapp-unread{position:absolute;top:1px;right:1px;width:15px;height:15px;border:2px solid #fff;border-radius:50%;background:#e82934}
+.lm-whatsapp-popover{position:absolute;right:0;bottom:calc(100% + 14px);width:min(350px,calc(100vw - 32px));overflow:hidden;border-radius:20px;background:#fff;box-shadow:0 14px 42px #240d1d38,0 2px 5px #240d1d12;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(12px) scale(.97);transform-origin:bottom right;transition:opacity .25s ease,transform .25s ease,visibility .25s ease}
+.lm-whatsapp-widget.is-open .lm-whatsapp-popover{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
+.lm-whatsapp-popover-head{position:relative;display:flex;align-items:center;gap:13px;min-height:112px;padding:20px;background:#075e54;color:#fff}
+.lm-whatsapp-avatar{position:relative;display:grid;place-items:center;flex:none;width:72px;height:72px;border-radius:50%;background:var(--lm-wine)}
+.lm-whatsapp-avatar img{display:block;width:60px;height:auto}
+.lm-whatsapp-avatar i{position:absolute;right:0;bottom:2px;width:15px;height:15px;border:2px solid #075e54;border-radius:50%;background:#29c669}
+.lm-whatsapp-popover-brand{display:flex;min-width:0;flex-direction:column;gap:5px}
+.lm-whatsapp-popover-brand strong{font-size:17px;font-weight:600}
+.lm-whatsapp-popover-brand small{font-size:12px;font-style:italic;line-height:1.4}
+.lm-whatsapp-close{position:absolute;top:15px;right:15px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;background:transparent;color:#fff}
+.lm-whatsapp-popover-body{padding:22px 20px;background:#eee9e2}
+.lm-whatsapp-message{position:relative;display:flex;flex-direction:column;gap:12px;min-height:142px;margin-left:15px;padding:25px 19px 18px;border-radius:0 17px 17px 17px;background:#fff;color:#171717;font-size:14px}
+.lm-whatsapp-message::before{position:absolute;top:0;left:-15px;width:0;height:0;border-top:15px solid #fff;border-left:15px solid transparent;content:''}
+.lm-whatsapp-message strong{font-weight:600}.lm-whatsapp-message time{align-self:flex-end;margin-top:auto;font-size:11px;font-weight:600}
+.lm-whatsapp-popover-foot{padding:14px 20px 20px}
+.lm-whatsapp-popover-foot a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:30px;background:#21cc62;color:#fff;font-size:15px;font-weight:600;transition:background .2s ease}
+.lm-whatsapp-popover-foot a:hover{background:#18b955;color:#fff}
+.lm-whatsapp-toggle:focus-visible,.lm-whatsapp-close:focus-visible,.lm-whatsapp-popover-foot a:focus-visible{outline:2px solid var(--lm-wine);outline-offset:3px}
 /* WooCommerce output keeps the active gateway, coupon, shipping and account hooks. */
 .woocommerce .button,.woocommerce button.button,.woocommerce input.button,.woocommerce a.button,.woocommerce #respond input#submit{border-radius:4px;background:var(--lm-wine);color:#fff;font-family:Poppins,Arial,sans-serif;font-size:12px;font-weight:600}
 .woocommerce .button:hover,.woocommerce button.button:hover,.woocommerce a.button:hover{background:#5f0030;color:#fff}
@@ -385,10 +408,10 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 @media(max-width:360px){.lm-header-logo{width:143px}.lm-header-actions{gap:5px}}
 @media(max-width:640px){.woocommerce .woocommerce-message .button,.woocommerce .woocommerce-info .button{float:none;display:table;margin:12px 0 0}.lm-product-reviews #review_form #respond{padding:18px}.lm-product-reviews #comments ol.commentlist li .comment_container{padding:14px}}
 @media(max-width:782px){.admin-bar .lm-header{top:46px}}
-@media(max-width:640px){html{scroll-padding-top:112px}.lm-header-main{height:112px}.lm-header-logo{width:146px}.lm-product-info h1{font-size:24px}.lm-short-description{font-size:13px}.lm-product-purchase .quantity input{width:70px;height:44px}.lm-product-purchase button.single_add_to_cart_button,.lm-product-purchase button.lm-buy-now{min-height:44px}.lm-ring-track button{height:46px}.lm-attribute-buttons button{min-height:40px}.lm-back-to-top{right:16px;bottom:88px}}
+@media(max-width:640px){html{scroll-padding-top:112px}.lm-header-main{height:112px}.lm-header-logo{width:146px}.lm-product-info h1{font-size:24px}.lm-short-description{font-size:13px}.lm-product-purchase .quantity input{width:70px;height:44px}.lm-product-purchase button.single_add_to_cart_button,.lm-product-purchase button.lm-buy-now{min-height:44px}.lm-ring-track button{height:46px}.lm-attribute-buttons button{min-height:40px}.lm-back-to-top{right:16px;bottom:88px}.lm-whatsapp-widget{right:12px;bottom:14px}}
 @media(max-width:600px){.admin-bar .lm-header{top:0}}
 @media(max-width:360px){.lm-header-logo{width:135px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lm-drawer,.lm-overlay,.lm-overlay-backdrop,.lm-hero-slide,.lm-search-panel,.lm-product-gallery .woocommerce-product-gallery__image img,.lm-back-to-top,.lm-header{transition:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lm-drawer,.lm-overlay,.lm-overlay-backdrop,.lm-hero-slide,.lm-search-panel,.lm-product-gallery .woocommerce-product-gallery__image img,.lm-back-to-top,.lm-header,.lm-whatsapp-popover,.lm-whatsapp-toggle{transition:none}}
 @media(max-width:1000px){.lm-footer-trust{gap:30px}.lm-footer-security{gap:10px}}
 @media(max-width:640px){.lm-footer .lm-footer-grid,.lm-footer-secondary>.lm-shell{width:min(100% - 36px,1160px)}.lm-footer-grid{gap:24px;padding-top:38px;padding-bottom:40px}.lm-footer-brand img{width:160px}.lm-footer-column{gap:7px}.lm-footer-trust{grid-template-columns:1fr;gap:26px;padding:34px 0}.lm-footer-trust h2{margin-bottom:10px}.lm-footer-trust img{max-height:42px}.lm-footer-legal{padding:10px 0 34px}.lm-footer-legal p{font-size:10px}}
 

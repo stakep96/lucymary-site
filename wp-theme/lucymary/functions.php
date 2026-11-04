@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.18' );
+define( 'LUCYMARY_VERSION', '0.2.19' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
@@ -102,12 +102,29 @@ function lucymary_setup() {
 add_action( 'after_setup_theme', 'lucymary_setup' );
 
 function lucymary_footer_customizer( $customize ) {
+	$customize->add_section( 'lucymary_footer_contact', array( 'title' => __( 'LucyMary: fale conosco', 'lucymary' ), 'priority' => 159 ) );
+	$contact_fields = array(
+		'lucymary_contact_email' => array( 'E-mail', 'davipereira@lucymary.com.br', 'email', 'sanitize_email' ),
+		'lucymary_contact_phone_1' => array( 'Telefone principal', '(88) 9 9683-9350', 'text', 'sanitize_text_field' ),
+		'lucymary_contact_phone_2' => array( 'Telefone secundário', '(88) 9 9946-1753', 'text', 'sanitize_text_field' ),
+		'lucymary_contact_hours' => array( 'Horário de atendimento', "Segunda a sexta: 9h às 18h.\nSábado: 9h às 14h.", 'textarea', 'sanitize_textarea_field' ),
+		'lucymary_contact_hours_en' => array( 'Horário de atendimento em inglês', "Monday to Friday: 9 am to 6 pm.\nSaturday: 9 am to 2 pm.", 'textarea', 'sanitize_textarea_field' ),
+		'lucymary_contact_address' => array( 'Endereço da loja', "Rua Frei Damião, nº 750, Lagoa Seca,\nJuazeiro do Norte – CE, CEP 63040-300.", 'textarea', 'sanitize_textarea_field' ),
+		'lucymary_contact_address_en' => array( 'Endereço da loja em inglês', "Rua Frei Damião, 750, Lagoa Seca,\nJuazeiro do Norte, CE, Brazil, 63040-300.", 'textarea', 'sanitize_textarea_field' ),
+	);
+	foreach ( $contact_fields as $key => $field ) {
+		$customize->add_setting( $key, array( 'default' => $field[1], 'sanitize_callback' => $field[3] ) );
+		$customize->add_control( $key, array( 'label' => $field[0], 'section' => 'lucymary_footer_contact', 'type' => $field[2] ) );
+	}
 	$customize->add_section( 'lucymary_footer_links', array( 'title' => __( 'LucyMary: redes sociais', 'lucymary' ), 'priority' => 160 ) );
-	foreach ( array( 'instagram' => 'Instagram', 'facebook' => 'Facebook' ) as $network => $label ) {
+	foreach ( array( 'instagram' => 'Instagram', 'facebook' => 'Facebook', 'whatsapp' => 'WhatsApp', 'youtube' => 'YouTube' ) as $network => $label ) {
 		$key = 'lucymary_' . $network . '_url';
-		$customize->add_setting( $key, array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+		$customize->add_setting( $key, array( 'default' => 'whatsapp' === $network ? 'https://wa.me/5588996839350' : '', 'sanitize_callback' => 'esc_url_raw' ) );
 		$customize->add_control( $key, array( 'label' => sprintf( __( 'URL do %s', 'lucymary' ), $label ), 'section' => 'lucymary_footer_links', 'type' => 'url' ) );
 	}
+	$customize->add_section( 'lucymary_whatsapp_widget', array( 'title' => __( 'LucyMary: botão do WhatsApp', 'lucymary' ), 'priority' => 161, 'description' => __( 'O botão flutuante fica abaixo de Voltar ao topo. Se o link ficar vazio, usa o WhatsApp das redes sociais.', 'lucymary' ) ) );
+	$customize->add_setting( 'lucymary_whatsapp_floating_url', array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+	$customize->add_control( 'lucymary_whatsapp_floating_url', array( 'label' => __( 'Link personalizado do botão flutuante', 'lucymary' ), 'section' => 'lucymary_whatsapp_widget', 'type' => 'url', 'description' => __( 'Use o link completo, por exemplo https://wa.me/55... ou um link com mensagem pronta.', 'lucymary' ) ) );
 }
 add_action( 'customize_register', 'lucymary_footer_customizer' );
 
@@ -294,6 +311,7 @@ function lucymary_icon( $name, $size = 20 ) {
 		'instagram' => '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
 		'facebook' => '<path d="M15 21v-8h3l.5-4H15V7c0-1.1.5-1.5 1.6-1.5H19V2h-3.3C12.6 2 11 4 11 7v2H8v4h3v8"/>',
 		'whatsapp' => '<path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.4-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 8.5c.4 2.9 2.6 5.2 5.5 5.8l1.5-1.4-2-1.1-.9 1a6.2 6.2 0 0 1-2.4-2.4l.9-.9-1.1-2Z"/>',
+		'youtube' => '<rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3V9Z"/>',
 		'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
 		'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
 		'chevron-down' => '<path d="m6 9 6 6 6-6"/>',

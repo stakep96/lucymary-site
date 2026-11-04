@@ -312,8 +312,61 @@
   window.addEventListener('resize', updateScrollUi, { passive: true });
   updateScrollUi();
   if (backToTop) {
+    let scrollFrame = 0;
+    let restoreScrollBehavior = null;
     backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      if (scrollFrame) {
+        window.cancelAnimationFrame(scrollFrame);
+        scrollFrame = 0;
+        if (restoreScrollBehavior !== null) document.documentElement.style.scrollBehavior = restoreScrollBehavior;
+      }
+      const startY = window.scrollY;
+      if (!startY) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        window.scrollTo(0, 0);
+        return;
+      }
+      const duration = Math.min(2200, Math.max(650, startY * 0.55));
+      const originalScrollBehavior = document.documentElement.style.scrollBehavior;
+      restoreScrollBehavior = originalScrollBehavior;
+      document.documentElement.style.scrollBehavior = 'auto';
+      const startedAt = performance.now();
+      const step = (now) => {
+        const progress = Math.min(1, (now - startedAt) / duration);
+        const eased = progress < .5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+        window.scrollTo(0, Math.round(startY * (1 - eased)));
+        if (progress < 1) {
+          scrollFrame = window.requestAnimationFrame(step);
+        } else {
+          scrollFrame = 0;
+          document.documentElement.style.scrollBehavior = originalScrollBehavior;
+          restoreScrollBehavior = null;
+        }
+      };
+      scrollFrame = window.requestAnimationFrame(step);
+    });
+  }
+
+  const whatsappWidget = q('.lm-whatsapp-widget');
+  if (whatsappWidget) {
+    const whatsappToggle = q('.lm-whatsapp-toggle', whatsappWidget);
+    const whatsappPopover = q('.lm-whatsapp-popover', whatsappWidget);
+    const whatsappClose = q('.lm-whatsapp-close', whatsappWidget);
+    const whatsappTime = q('.lm-whatsapp-time', whatsappWidget);
+    if (whatsappTime) whatsappTime.textContent = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+    const setWhatsappOpen = (open) => {
+      whatsappWidget.classList.toggle('is-open', open);
+      whatsappToggle.setAttribute('aria-expanded', String(open));
+      whatsappPopover.setAttribute('aria-hidden', String(!open));
+      if (open) whatsappClose.focus();
+    };
+    whatsappToggle.addEventListener('click', () => setWhatsappOpen(!whatsappWidget.classList.contains('is-open')));
+    whatsappClose.addEventListener('click', () => { setWhatsappOpen(false); whatsappToggle.focus(); });
+    document.addEventListener('pointerdown', (event) => {
+      if (whatsappWidget.classList.contains('is-open') && !whatsappWidget.contains(event.target)) setWhatsappOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && whatsappWidget.classList.contains('is-open')) { setWhatsappOpen(false); whatsappToggle.focus(); }
     });
   }
 
