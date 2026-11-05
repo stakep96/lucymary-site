@@ -9,7 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.19' );
+define( 'LUCYMARY_VERSION', '0.2.20' );
+require_once get_theme_file_path( 'inc/product-choices.php' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
@@ -296,6 +297,9 @@ function lucymary_category_image( $term ) {
 }
 
 function lucymary_icon( $name, $size = 20 ) {
+	if ( 'whatsapp' === $name ) {
+		return '<svg width="' . (int) $size . '" height="' . (int) $size . '" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926a7.9 7.9 0 0 0 1.057 3.962L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.926a7.85 7.85 0 0 0-2.327-5.611M7.998 14.52a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.5c.004-3.632 2.96-6.588 6.59-6.588a6.55 6.55 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.665c-.004 3.632-2.96 6.588-6.591 6.588m3.614-4.932c-.197-.099-1.17-.578-1.351-.644-.181-.066-.313-.099-.444.099s-.51.644-.625.775c-.115.132-.23.148-.428.05-.197-.1-.832-.307-1.584-.98-.586-.522-.982-1.166-1.097-1.364-.115-.197-.012-.304.087-.403.088-.088.197-.23.296-.346.099-.115.132-.197.197-.329.066-.132.033-.247-.016-.346-.05-.099-.444-1.07-.609-1.463-.16-.382-.323-.33-.444-.336l-.378-.007a.73.73 0 0 0-.526.247c-.181.197-.69.675-.69 1.644s.707 1.907.806 2.039c.099.132 1.39 2.122 3.372 2.975.471.203.839.324 1.125.414.472.15.902.129 1.241.078.379-.056 1.17-.478 1.335-.94.164-.462.164-.858.115-.94-.05-.082-.181-.132-.378-.23"/></svg>';
+	}
 	$paths = array(
 		'menu' => '<path d="M4 7h16M4 12h16M4 17h16"/>',
 		'close' => '<path d="M5 5l14 14M19 5L5 19"/>',
@@ -310,7 +314,6 @@ function lucymary_icon( $name, $size = 20 ) {
 		'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 		'instagram' => '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
 		'facebook' => '<path d="M15 21v-8h3l.5-4H15V7c0-1.1.5-1.5 1.6-1.5H19V2h-3.3C12.6 2 11 4 11 7v2H8v4h3v8"/>',
-		'whatsapp' => '<path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.4-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 8.5c.4 2.9 2.6 5.2 5.5 5.8l1.5-1.4-2-1.1-.9 1a6.2 6.2 0 0 1-2.4-2.4l.9-.9-1.1-2Z"/>',
 		'youtube' => '<rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3V9Z"/>',
 		'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
 		'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
@@ -337,7 +340,7 @@ function lucymary_product_card( $product ) {
 	$url = get_permalink( $product->get_id() );
 	$image_url = $product->get_image_id() ? wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
 	$can_add = $product->is_purchasable() && $product->is_in_stock();
-	$ajax_add = $can_add && $product->is_type( 'simple' ) && $product->supports( 'ajax_add_to_cart' );
+	$ajax_add = $can_add && $product->is_type( 'simple' ) && ! lucymary_product_requires_choices( $product ) && $product->supports( 'ajax_add_to_cart' );
 	?>
 	<article class="lm-product-card">
 		<div class="lm-product-media">

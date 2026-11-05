@@ -249,6 +249,13 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-product-purchase button.single_add_to_cart_button:hover{background:var(--lm-wine)!important;color:#fff!important}
 .lm-product-purchase button:disabled{opacity:.55!important}
 .lm-attribute-choice{margin-top:8px}
+.lm-descriptive-choices{flex:0 0 100%;width:100%;margin:4px 0 10px}
+.lm-descriptive-choices .lm-choice-row{margin:0 0 12px}
+.lm-descriptive-choices .lm-choice-row>label{display:block;margin-bottom:6px;color:#3b3138;font-size:12px;font-weight:600}
+.lm-descriptive-choices select{width:100%;min-height:40px;border:1px solid #d8c9d1;background:#fff;color:var(--lm-ink)}
+.lm-descriptive-choices .lm-enhanced-choice>label,.lm-descriptive-choices .lm-enhanced-choice>select{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.lm-descriptive-choices .lm-enhanced-choice .lm-attribute-choice{margin-top:0}
+.lm-attribute-selected{margin-left:8px;color:var(--lm-wine);font-weight:400}
 .lm-attribute-buttons{display:flex;flex-wrap:wrap;gap:7px}
 .lm-attribute-buttons button{min-width:38px;min-height:36px;border:1px solid #dfd3d9;border-radius:4px;padding:0 9px;background:#fff;color:#51464c;font-size:12px}
 .lm-attribute-buttons button[aria-pressed=true]{border-color:var(--lm-wine);background:var(--lm-wine);color:#fff}
@@ -353,7 +360,7 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-back-to-top{position:fixed;right:24px;bottom:96px;z-index:40;display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--lm-line);border-radius:50%;background:#fff;color:var(--lm-wine);box-shadow:0 5px 18px #3210231a;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease,visibility .2s ease}
 .lm-back-to-top.is-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
 .lm-whatsapp-widget{position:fixed;right:20px;bottom:20px;z-index:41}
-.lm-whatsapp-toggle{position:relative;display:grid;place-items:center;width:54px;height:54px;border:0;border-radius:50%;background:#075e54;color:#fff;box-shadow:0 6px 20px #1b332a38;transition:transform .2s ease,box-shadow .2s ease}
+.lm-whatsapp-toggle{position:relative;display:grid;place-items:center;width:54px;height:54px;border:0;border-radius:50%;background:#21cc62;color:#fff;box-shadow:0 6px 20px #1b332a38;transition:transform .2s ease,box-shadow .2s ease}
 .lm-whatsapp-toggle:hover{transform:translateY(-2px);box-shadow:0 9px 24px #1b332a42}
 .lm-whatsapp-toggle svg{width:29px;height:29px}
 .lm-whatsapp-unread{position:absolute;top:1px;right:1px;width:15px;height:15px;border:2px solid #fff;border-radius:50%;background:#e82934}
@@ -717,3 +724,4 @@ body.woocommerce-cart,body.woocommerce-checkout:has(.lm-checkout-layout){backgro
 .woocommerce-checkout .lm-checkout-summary #shipping_method li{display:grid;grid-template-columns:16px minmax(0,1fr);align-items:start;gap:8px;width:100%;margin:0 0 8px;text-align:left}
 .woocommerce-checkout .lm-checkout-summary #shipping_method li input{margin:3px 0 0}
 .woocommerce-checkout .lm-checkout-summary #shipping_method label{display:block;width:100%;margin:0;overflow-wrap:normal;word-break:normal;line-height:1.5;text-align:left}
+@media(max-width:640px){.lm-product-purchase form.cart:has(.lm-descriptive-choices) .lm-descriptive-choices,.lm-product-purchase .woocommerce-variation-add-to-cart:has(.lm-descriptive-choices) .lm-descriptive-choices{grid-column:1/-1;grid-row:1}.lm-product-purchase form.cart:has(.lm-descriptive-choices) .quantity,.lm-product-purchase .woocommerce-variation-add-to-cart:has(.lm-descriptive-choices) .quantity{grid-column:1;grid-row:2/4}.lm-product-purchase form.cart:has(.lm-descriptive-choices) button.single_add_to_cart_button,.lm-product-purchase .woocommerce-variation-add-to-cart:has(.lm-descriptive-choices) button.single_add_to_cart_button{grid-column:2/4;grid-row:2}.lm-product-purchase form.cart:has(.lm-descriptive-choices) button.lm-buy-now,.lm-product-purchase .woocommerce-variation-add-to-cart:has(.lm-descriptive-choices) button.lm-buy-now{grid-column:2;grid-row:3}.lm-product-purchase form.cart:has(.lm-descriptive-choices) .lm-single-favorite,.lm-product-purchase .woocommerce-variation-add-to-cart:has(.lm-descriptive-choices) .lm-single-favorite{grid-column:3;grid-row:3}}

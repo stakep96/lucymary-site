@@ -542,9 +542,68 @@
       const shipping = q('.lm-shipping-form'); if (shipping) shipping.dataset.variationId = variation.variation_id;
     }).on('reset_data', () => { const shipping = q('.lm-shipping-form'); if (shipping) shipping.dataset.variationId = ''; const price = q('.lm-main-price'); if (price && initialPrice) price.innerHTML = initialPrice; });
   }
+  qa('.lm-descriptive-choices').forEach((container) => {
+    qa('.lm-choice-row', container).forEach((row) => {
+      const select = q('select[data-lm-choice]', row);
+      if (!select) return;
+      const options = qa('option', select).filter((option) => option.value);
+      if (!options.length) return;
+      const label = q('label', row)?.textContent?.trim() || copy.option;
+      const heading = document.createElement('strong'); heading.className = 'lm-attribute-label'; heading.textContent = label;
+      const chosen = document.createElement('span'); chosen.className = 'lm-attribute-selected'; heading.append(chosen);
+      const ring = /aro|tamanho|ring size/i.test(label) && options.length > 7;
+      let focusIndex = Math.max(0, options.findIndex((option) => option.value === select.value));
+      let track;
+      const buttons = document.createElement('div'); buttons.className = 'lm-attribute-buttons';
+      function choose(option) { select.value = option.value; select.dispatchEvent(new Event('change', { bubbles: true })); render(); }
+      function render() {
+        chosen.textContent = select.value ? select.selectedOptions[0]?.textContent || '' : '';
+        if (ring) {
+          focusIndex = Math.max(0, options.findIndex((option) => option.value === select.value));
+          track.replaceChildren();
+          for (let offset = -3; offset <= 3; offset++) {
+            const option = options[(focusIndex + offset + options.length) % options.length];
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = option.textContent;
+            button.setAttribute('aria-label', `${label} ${option.textContent}`);
+            button.setAttribute('aria-pressed', String(option.value === select.value));
+            button.addEventListener('click', () => choose(option)); track.append(button);
+          }
+        } else {
+          buttons.replaceChildren();
+          for (const option of options) {
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = option.textContent;
+            button.setAttribute('aria-pressed', String(option.value === select.value));
+            button.addEventListener('click', () => choose(option)); buttons.append(button);
+          }
+        }
+      }
+      const enhanced = document.createElement('div'); enhanced.className = 'lm-attribute-choice'; enhanced.append(heading);
+      if (ring) {
+        const selector = document.createElement('div'); selector.className = 'lm-ring-selector';
+        const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '‹'; prev.setAttribute('aria-label', copy.ringPrevious);
+        const next = document.createElement('button'); next.type = 'button'; next.textContent = '›'; next.setAttribute('aria-label', copy.ringNext);
+        track = document.createElement('div'); track.className = 'lm-ring-track';
+        function advance(direction) { choose(options[(focusIndex + direction + options.length) % options.length]); }
+        prev.addEventListener('click', () => advance(-1)); next.addEventListener('click', () => advance(1));
+        let touchX = null; track.addEventListener('touchstart', (event) => { touchX = event.touches[0].clientX; }, { passive: true });
+        track.addEventListener('touchend', (event) => { if (touchX !== null && Math.abs(event.changedTouches[0].clientX - touchX) > 30) advance(event.changedTouches[0].clientX > touchX ? -1 : 1); touchX = null; }, { passive: true });
+        selector.append(prev, track, next); enhanced.append(selector);
+        const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.innerHTML = lucymaryTheme.rulerIcon; guide.append(document.createTextNode(copy.ringGuide));
+        const dialog = document.createElement('dialog'); dialog.className = 'lm-size-dialog';
+        const close = document.createElement('button'); close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', copy.ringClose); close.addEventListener('click', () => dialog.close());
+        const title = document.createElement('h2'); title.textContent = copy.ringGuide; const info = document.createElement('p'); info.textContent = copy.ringDialogText;
+        dialog.append(close, title, info); guide.addEventListener('click', () => dialog.showModal()); enhanced.append(guide, dialog);
+      } else { enhanced.append(buttons); }
+      row.insertBefore(enhanced, select); row.classList.add('lm-enhanced-choice');
+      select.tabIndex = -1; select.setAttribute('aria-hidden', 'true');
+      select.addEventListener('change', render); render();
+    });
+  });
   const selectionDialog = q('.lm-selection-dialog');
   function missingVariation(form) {
-    if (!form?.matches('.variations_form')) return null;
+    if (!form?.matches('form.cart')) return null;
+    if (qa('.lm-descriptive-choices select', form).some((select) => !select.value)) return copy.chooseProductOptions;
+    if (!form.matches('.variations_form')) return null;
     if (qa('.variations select', form).some((select) => !select.value)) return copy.chooseProductOptions;
     if (!Number(q('input.variation_id', form)?.value)) return copy.waitForVariation;
     return null;
