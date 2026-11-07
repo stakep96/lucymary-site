@@ -18,12 +18,14 @@
     qa('.lm-checkout-payment input[name="payment_method"]').forEach((input) => {
       const label = q('label', input.parentElement);
       if (!label || label.dataset.lmShortLabel) return;
-      const title = `${label.textContent} ${input.value}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      const shortLabel = /pix/.test(title) ? copy.paymentPix : /boleto|loterica|ticket/.test(title) ? copy.paymentBoleto : /cartao|credito|debito|credit|debit|card|mercadopago\.custom/.test(title) ? copy.paymentCard : null;
+      const gatewayDetails = `${label.textContent} ${input.value} ${q('img', label)?.alt || ''} ${q('img', label)?.src || ''} ${q('.payment_box', input.parentElement)?.textContent || ''}`;
+      const title = gatewayDetails.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const isInfinitePay = /infinite[\s_-]*pay/.test(title);
+      const shortLabel = isInfinitePay ? copy.paymentInfinitePay : /pix/.test(title) ? copy.paymentPix : /boleto|loterica|ticket/.test(title) ? copy.paymentBoleto : /cartao|credito|debito|credit|debit|card|mercadopago\.custom/.test(title) ? copy.paymentCard : null;
       if (!shortLabel) return;
       const textNode = Array.from(label.childNodes).find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
       if (!textNode) return;
-      label.title = label.textContent.trim();
+      label.title = isInfinitePay ? shortLabel : label.textContent.trim();
       textNode.textContent = shortLabel;
       label.dataset.lmShortLabel = 'true';
     });

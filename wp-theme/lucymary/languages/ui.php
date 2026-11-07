@@ -8,6 +8,7 @@ return array(
 		'Cartão' => 'Card',
 		'Boleto' => 'Boleto',
 		'Pix' => 'Pix',
+		'PIX ou Cartão' => 'Pix or Card',
 		'Observações para entrega' => 'Delivery instructions',
 		'Instruções para a entrega neste endereço (opcional).' => 'Instructions for delivery to this address (optional).',
 		'A sacola está indisponível no momento.' => 'The bag is temporarily unavailable.',

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.20' );
+define( 'LUCYMARY_VERSION', '0.2.21' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
@@ -50,20 +50,23 @@ function lucymary_admin_shipping_delivery_notes( $order ) {
 }
 add_action( 'woocommerce_admin_order_data_after_shipping_address', 'lucymary_admin_shipping_delivery_notes' );
 
-/** WooCommerce selects the first gateway when none was chosen; put an available card option first. */
-function lucymary_prefer_card_gateway( $gateways ) {
-	if ( ! is_array( $gateways ) || ! function_exists( 'WC' ) || ! WC()->session || ! function_exists( 'is_checkout' ) || ! is_checkout() ) { return $gateways; }
-	$chosen = WC()->session->get( 'chosen_payment_method' );
-	if ( $chosen && isset( $gateways[ $chosen ] ) ) { return $gateways; }
+/** Keep the available InfinitePay gateway first, without replacing a customer's payment choice. */
+function lucymary_prefer_infinitepay_gateway( $gateways ) {
+	if ( ! is_array( $gateways ) ) { return $gateways; }
 	foreach ( $gateways as $id => $gateway ) {
-		$title = remove_accents( wp_strip_all_tags( $gateway->get_title() ) );
-		if ( preg_match( '/cartao|credit card|debit card/i', $title ) || preg_match( '/mercadopago.custom|credit|card/i', $id ) ) {
+		$details = implode( ' ', array(
+			$id,
+			get_class( $gateway ),
+			$gateway->get_method_title(),
+			wp_strip_all_tags( $gateway->get_description() ),
+		) );
+		if ( preg_match( '/infinite[\s_-]*pay/i', $details ) ) {
 			return array( $id => $gateway ) + $gateways;
 		}
 	}
 	return $gateways;
 }
-add_filter( 'woocommerce_available_payment_gateways', 'lucymary_prefer_card_gateway', 100 );
+add_filter( 'woocommerce_available_payment_gateways', 'lucymary_prefer_infinitepay_gateway', 100 );
 
 /** Add each cart item's WooCommerce image to the classic checkout review, including Ajax refreshes. */
 function lucymary_checkout_item_thumbnail( $quantity_html, $cart_item ) {
@@ -190,6 +193,7 @@ function lucymary_assets() {
 			'paymentCard' => __( 'Cartão', 'lucymary' ),
 			'paymentBoleto' => __( 'Boleto', 'lucymary' ),
 			'paymentPix' => __( 'Pix', 'lucymary' ),
+			'paymentInfinitePay' => __( 'PIX ou Cartão', 'lucymary' ),
 			'searchMin' => __( 'Digite ao menos duas letras para encontrar produtos.', 'lucymary' ),
 			'searchLoading' => __( 'Buscando produtos…', 'lucymary' ),
 			'searchResults' => __( 'Produtos', 'lucymary' ),

@@ -644,7 +644,7 @@ body.woocommerce-cart,body.woocommerce-checkout:has(.lm-checkout-layout){backgro
 .woocommerce-cart .lm-content-page .woocommerce .wc-proceed-to-checkout a.checkout-button.button.alt{display:flex!important;align-items:center;justify-content:center;text-align:center!important}
 
 /* Coupon stays a separate WooCommerce form; the other panels remain inside form.checkout. */
-.woocommerce-checkout .lm-checkout-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,390px);column-gap:clamp(24px,4vw,52px);row-gap:18px;align-items:start}
+.woocommerce-checkout .lm-checkout-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,390px);grid-template-rows:max-content max-content minmax(0,1fr);column-gap:clamp(24px,4vw,52px);row-gap:18px;align-items:start}
 .woocommerce-checkout .lm-checkout-form{display:contents}
 .woocommerce-checkout .lm-checkout-fields{grid-column:1;grid-row:1 / span 3;min-width:0}
 .woocommerce-checkout .lm-checkout-summary{grid-column:2;grid-row:1;position:static;min-width:0}
@@ -673,7 +673,7 @@ body.woocommerce-cart,body.woocommerce-checkout:has(.lm-checkout-layout){backgro
 .woocommerce-checkout .lm-checkout-payment #payment div.payment_box::before{display:none}
 .woocommerce-checkout .lm-checkout-payment #payment .place-order{padding:12px 0 0}
 .woocommerce-checkout .lm-checkout-payment #payment #place_order{float:none;width:100%;min-height:50px;border-radius:4px;background:var(--lm-wine)!important;color:#fff!important;font-size:13px;font-weight:600}
-@media(max-width:900px){.woocommerce-checkout .lm-checkout-layout{grid-template-columns:1fr}.woocommerce-checkout .lm-checkout-fields{grid-column:1;grid-row:1}.woocommerce-checkout .lm-checkout-summary{grid-column:1;grid-row:2}.woocommerce-checkout .lm-checkout-coupon{grid-column:1;grid-row:3}.woocommerce-checkout .lm-checkout-payment{grid-column:1;grid-row:4}}
+@media(max-width:900px){.woocommerce-checkout .lm-checkout-layout{grid-template-columns:1fr;grid-template-rows:none}.woocommerce-checkout .lm-checkout-fields{grid-column:1;grid-row:1}.woocommerce-checkout .lm-checkout-summary{grid-column:1;grid-row:2}.woocommerce-checkout .lm-checkout-coupon{grid-column:1;grid-row:3}.woocommerce-checkout .lm-checkout-payment{grid-column:1;grid-row:4}}
 @media(max-width:640px){.woocommerce-checkout .lm-checkout-coupon,.woocommerce-checkout .lm-checkout-payment{padding:18px}.woocommerce-checkout .lm-checkout-payment #payment ul.payment_methods>li>label{min-width:85px;padding:8px;font-size:10px}}
 
 /* Let the complete cart totals use the panel width, including shipping and CEP. */
