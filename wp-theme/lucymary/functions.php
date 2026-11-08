@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.22' );
+define( 'LUCYMARY_VERSION', '0.2.23' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
