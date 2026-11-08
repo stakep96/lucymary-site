@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.21' );
+define( 'LUCYMARY_VERSION', '0.2.22' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
@@ -379,6 +379,28 @@ function lucymary_color_for_term( $slug ) {
 	return isset( $colors[ $slug ] ) ? $colors[ $slug ] : '#d9d4d7';
 }
 
+/** Resolve only global product attributes that have terms assigned to products. */
+function lucymary_catalog_attribute_taxonomy( $field ) {
+	static $resolved = array();
+	if ( array_key_exists( $field, $resolved ) ) { return $resolved[ $field ]; }
+	$candidates = array(
+		'lm_color'    => array( 'pa_cor', 'pa_cores' ),
+		'lm_material' => array( 'pa_material' ),
+		'lm_stone'    => array( 'pa_pedras', 'pa_pedra' ),
+	);
+	$resolved[ $field ] = '';
+	if ( ! isset( $candidates[ $field ] ) ) { return ''; }
+	foreach ( $candidates[ $field ] as $taxonomy ) {
+		if ( ! taxonomy_exists( $taxonomy ) ) { continue; }
+		$terms = get_terms( array( 'taxonomy' => $taxonomy, 'hide_empty' => true, 'number' => 1, 'fields' => 'ids' ) );
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+			$resolved[ $field ] = $taxonomy;
+			break;
+		}
+	}
+	return $resolved[ $field ];
+}
+
 /** Run third-party product hooks without repeating the WooCommerce content rendered by this theme. */
 function lucymary_product_plugin_content( $hook, $core_callbacks ) {
 	$removed = array();
@@ -417,11 +439,8 @@ function lucymary_catalog_query( $query ) {
 		$query->set( 'meta_query', $meta );
 	}
 	$tax = (array) $query->get( 'tax_query' );
-	foreach ( array( 'lm_color' => array( 'pa_cor', 'pa_cores' ), 'lm_material' => array( 'pa_material' ) ) as $field => $candidates ) {
-		$taxonomy = '';
-		foreach ( $candidates as $candidate ) {
-			if ( taxonomy_exists( $candidate ) ) { $taxonomy = $candidate; break; }
-		}
+	foreach ( array( 'lm_color', 'lm_material', 'lm_stone' ) as $field ) {
+		$taxonomy = lucymary_catalog_attribute_taxonomy( $field );
 		$value = isset( $_GET[ $field ] ) ? sanitize_title( wp_unslash( $_GET[ $field ] ) ) : '';
 		if ( $taxonomy && $value && term_exists( $value, $taxonomy ) ) {
 			$tax[] = array( 'taxonomy' => $taxonomy, 'field' => 'slug', 'terms' => $value );

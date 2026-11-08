@@ -50,7 +50,7 @@ function lucymary_language_url( $language ) {
 	$query = wp_parse_url( $uri, PHP_URL_QUERY );
 	$arguments = array();
 	if ( $query ) { wp_parse_str( $query, $arguments ); }
-	$allowed = array_intersect_key( $arguments, array_flip( array( 's', 'post_type', 'paged', 'page', 'orderby', 'lm_min', 'lm_max', 'lm_rating', 'lm_color', 'lm_material' ) ) );
+	$allowed = array_intersect_key( $arguments, array_flip( array( 's', 'post_type', 'paged', 'page', 'orderby', 'lm_min', 'lm_max', 'lm_rating', 'lm_color', 'lm_material', 'lm_stone' ) ) );
 	if ( $allowed ) { $url = add_query_arg( $allowed, $url ); }
 	return 'en' === $language ? add_query_arg( 'lm_lang', 'en', $url ) : $url;
 }
@@ -150,7 +150,7 @@ add_filter( 'get_the_terms', 'lucymary_translate_terms' );
 
 function lucymary_translate_attribute_label( $label ) {
 	if ( ! lucymary_english_request() ) { return $label; }
-	$labels = array( 'Ouro' => 'Gold', 'Aro' => 'Ring size', 'Tamanho do Aro' => 'Ring size', 'Cor' => 'Color', 'Cores' => 'Colors', 'Material' => 'Material' );
+	$labels = array( 'Ouro' => 'Gold', 'Aro' => 'Ring size', 'Tamanho do Aro' => 'Ring size', 'Cor' => 'Color', 'Cores' => 'Colors', 'Material' => 'Material', 'Pedra' => 'Stone', 'Pedras' => 'Stones' );
 	return $labels[ $label ] ?? $label;
 }
 add_filter( 'woocommerce_attribute_label', 'lucymary_translate_attribute_label' );
