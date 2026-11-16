@@ -4,6 +4,15 @@ defined( 'ABSPATH' ) || exit;
 
 return array(
 	'en' => array(
+		'Permitir gravação na peça' => 'Allow engraving on this piece',
+		'Mostra uma opção de gravação opcional na página do produto. O texto escolhido acompanha o item no carrinho e no pedido.' => 'Show optional engraving on the product page. The chosen text accompanies the cart and order item.',
+		'Gravar nome na peça' => 'Engrave this piece',
+		'O que deseja gravar?' => 'What would you like engraved?',
+		'Até 4 caracteres: iniciais, letras ou símbolos.' => 'Up to 4 characters: initials, letters, or symbols.',
+		'Informe até 4 letras ou símbolos para a gravação.' => 'Enter up to 4 letters or symbols for engraving.',
+		'Informe o texto da gravação antes de continuar.' => 'Enter the engraving text to continue.',
+		'Use até 4 letras ou símbolos para a gravação.' => 'Use up to 4 letters or symbols for engraving.',
+		'Gravação na peça' => 'Engraving',
 		'Telefone' => 'Phone',
 		'Cartão' => 'Card',
 		'Boleto' => 'Boleto',

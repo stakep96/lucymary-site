@@ -601,10 +601,32 @@
       select.addEventListener('change', render); render();
     });
   });
+  qa('[data-lm-engraving]').forEach((container) => {
+    const toggle = q('[data-lm-engraving-toggle]', container);
+    const field = q('[data-lm-engraving-text]', container);
+    const inputWrap = q('[data-lm-engraving-input]', container);
+    if (!toggle || !field || !inputWrap) return;
+    toggle.addEventListener('change', () => {
+      inputWrap.hidden = !toggle.checked;
+      field.disabled = !toggle.checked;
+      if (toggle.checked) field.focus();
+      else field.value = '';
+    });
+    field.addEventListener('input', () => {
+      const characters = Array.from(field.value);
+      if (characters.length > 4) field.value = characters.slice(0, 4).join('');
+    });
+  });
   const selectionDialog = q('.lm-selection-dialog');
   function missingVariation(form) {
     if (!form?.matches('form.cart')) return null;
     if (qa('.lm-descriptive-choices select', form).some((select) => !select.value)) return copy.chooseProductOptions;
+    const engraving = q('[data-lm-engraving]', form);
+    if (engraving && q('[data-lm-engraving-toggle]', engraving)?.checked) {
+      const value = q('[data-lm-engraving-text]', engraving)?.value.trim() || '';
+      if (!value) return copy.engravingRequired;
+      if (Array.from(value).length > 4 || !/^[\p{L}\p{M}\p{S}\p{P} ]+$/u.test(value)) return copy.engravingInvalid;
+    }
     if (!form.matches('.variations_form')) return null;
     if (qa('.variations select', form).some((select) => !select.value)) return copy.chooseProductOptions;
     if (!Number(q('input.variation_id', form)?.value)) return copy.waitForVariation;

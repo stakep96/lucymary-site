@@ -4,6 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 function lucymary_product_requires_choices( $product ) {
 	if ( ! $product || ! $product->is_type( array( 'simple', 'variable' ) ) ) { return false; }
+	if ( function_exists( 'lucymary_engraving_enabled' ) && lucymary_engraving_enabled( $product ) ) { return true; }
 	foreach ( $product->get_attributes() as $attribute ) {
 		if ( $attribute->get_visible() && ! $attribute->get_variation() && $attribute->get_options() ) { return true; }
 	}

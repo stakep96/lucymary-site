@@ -1,5 +1,11 @@
 # Tema LucyMary para WordPress + WooCommerce
 
+## Links do cabeçalho e gravação personalizada
+
+- Em **Aparência → Personalizar → LucyMary: links do cabeçalho**, informe as URLs de **Sobre**, **Lojas** e **Contato**. Os mesmos links são usados no cabeçalho desktop e no menu mobile. Se um campo ficar vazio, o tema mantém o destino atual: `/#sobre`, `/#lojas` ou `/#contato`.
+- Para oferecer gravação em um produto específico, abra **Produtos → Todos os produtos → Editar**, vá a **Dados do produto → Geral**, marque **Permitir gravação na peça**, salve/atualize o produto e limpe o cache da página. Isso funciona em produtos simples e variáveis. No site, a opção **Gravar nome na peça** começa desmarcada; ao marcá-la, o cliente informa até quatro caracteres (iniciais, letras ou símbolos). O texto aparece no carrinho, na finalização e no item do pedido no painel WooCommerce.
+- A gravação é um dado personalizado do item, não uma variação de preço ou estoque. Portanto, não é preciso criar uma variação “nome” no WooCommerce. Se a gravação tiver preço adicional, essa regra comercial precisará de uma implementação própria antes de habilitar a cobrança.
+
 O diretório [`lucymary/`](lucymary/) é um **tema clássico WordPress** criado a partir da identidade visual do frontend Next.js deste repositório. Produtos, preços, estoque, categorias, cupons, carrinho, clientes, pedidos e pagamentos continuam no WooCommerce. O tema não precisa de chaves de API nem mantém outro banco de dados.
 
 ## Páginas e recursos incluídos
@@ -39,7 +45,7 @@ Essa implementação não gera tradução automática. Complete os campos em ing
 
 1. Faça um backup de arquivos e banco do WordPress. Não substitua a instalação de produção como primeiro teste.
 2. Instale o WooCommerce e confirme que as páginas **Loja**, **Carrinho**, **Finalizar compra** e **Minha conta** estão atribuídas em WooCommerce → Configurações → Avançado.
-3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.23.zip`).
+3. Gere o ZIP com `powershell -ExecutionPolicy Bypass -File scripts/package-wp-theme.ps1` na raiz deste repositório. O arquivo gerado usa a versão indicada em `style.css` (atualmente `wp-theme/lucymary-0.2.24.zip`).
 4. Em um ambiente de teste, vá a Aparência → Temas → Adicionar novo → Enviar tema e instale esse ZIP. Ele contém a pasta `lucymary/` no nível correto.
 5. Com ShopEngine ainda ativo, templates do próprio ShopEngine podem continuar sobrepondo os do tema. Desative **somente o ShopEngine no ambiente de teste** após conferir suas seis páginas ativas. Teste home, loja, categoria, produto simples e variável, busca, carrinho, cupom, CEP, checkout e minha conta.
 6. Valide o plugin Mercado Pago Checkout Pro no checkout real do WooCommerce com o procedimento de teste autorizado da loja. O botão **Comprar agora** adiciona o produto e redireciona para o checkout do WooCommerce; o tema não confirma pagamento por URL de retorno nem cria pedidos diretamente.

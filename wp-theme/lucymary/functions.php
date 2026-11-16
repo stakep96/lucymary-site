@@ -9,8 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.23' );
+define( 'LUCYMARY_VERSION', '0.2.24' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
+require_once get_theme_file_path( 'inc/engraving.php' );
 
 // A separate shipping address is an opt-in choice on the classic checkout.
 add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
@@ -104,6 +105,29 @@ function lucymary_setup() {
 	add_image_size( 'lucymary-card', 420, 420, false );
 }
 add_action( 'after_setup_theme', 'lucymary_setup' );
+
+/** Links do cabeçalho, editáveis no Personalizar e compartilhados com o menu mobile. */
+function lucymary_header_link( $name ) {
+	$defaults = array( 'about' => '/#sobre', 'stores' => '/#lojas', 'contact' => '/#contato' );
+	if ( ! isset( $defaults[ $name ] ) ) { return home_url( '/' ); }
+	$default = home_url( $defaults[ $name ] );
+	$url = get_theme_mod( 'lucymary_header_' . $name . '_url', '' );
+	return $url ? lucymary_localize_url( esc_url_raw( $url ) ) : $default;
+}
+
+function lucymary_header_customizer( $customize ) {
+	$customize->add_section( 'lucymary_header_links', array(
+		'title'       => __( 'LucyMary: links do cabeçalho', 'lucymary' ),
+		'priority'    => 158,
+		'description' => __( 'Use URLs completas. Deixe vazio para manter o link atual de cada botão.', 'lucymary' ),
+	) );
+	foreach ( array( 'about' => __( 'Sobre', 'lucymary' ), 'stores' => __( 'Lojas', 'lucymary' ), 'contact' => __( 'Contato', 'lucymary' ) ) as $name => $label ) {
+		$key = 'lucymary_header_' . $name . '_url';
+		$customize->add_setting( $key, array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+		$customize->add_control( $key, array( 'label' => $label, 'section' => 'lucymary_header_links', 'type' => 'url' ) );
+	}
+}
+add_action( 'customize_register', 'lucymary_header_customizer' );
 
 function lucymary_footer_customizer( $customize ) {
 	$customize->add_section( 'lucymary_footer_contact', array( 'title' => __( 'LucyMary: fale conosco', 'lucymary' ), 'priority' => 159 ) );
@@ -211,6 +235,8 @@ function lucymary_assets() {
 			'shippingError' => __( 'Não foi possível calcular o frete.', 'lucymary' ),
 			'shippingNoRates' => __( 'Não foi possível estimar o frete aqui. Confira as opções no carrinho.', 'lucymary' ),
 			'chooseProductOptions' => __( 'Escolha as opções da peça para continuar.', 'lucymary' ),
+			'engravingRequired' => __( 'Informe o texto da gravação antes de continuar.', 'lucymary' ),
+			'engravingInvalid' => __( 'Use até 4 letras ou símbolos para a gravação.', 'lucymary' ),
 			'waitForVariation' => __( 'Aguarde a confirmação da opção selecionada e tente novamente.', 'lucymary' ),
 			'cartUpdateError' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ),
 			'cartQuantityDecrease' => __( 'Diminuir quantidade', 'lucymary' ),
