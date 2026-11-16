@@ -15,7 +15,8 @@ function lucymary_product_choice_attributes( $product, $include_variation = fals
 	$choices = array();
 	if ( ! $product || ! $product->is_type( array( 'simple', 'variable' ) ) ) { return $choices; }
 	foreach ( $product->get_attributes() as $attribute ) {
-		if ( ! $attribute->get_visible() || ( $attribute->get_variation() && ! $include_variation ) ) { continue; }
+		// Variation attributes are purchase choices even when hidden from the details table.
+		if ( ( ! $attribute->get_visible() && ! ( $include_variation && $attribute->get_variation() ) ) || ( $attribute->get_variation() && ! $include_variation ) ) { continue; }
 		$name = $attribute->get_name();
 		$options = array();
 		foreach ( $attribute->get_options() as $value ) {
@@ -53,11 +54,9 @@ function lucymary_render_product_choices( $product, $include_variation = false )
 	echo '</div>';
 }
 
-/** WooCommerce omits the purchase form for an unavailable product; keep its configured choices visible. */
+/** Keep configured choices visible when the WooCommerce purchase form is unavailable. */
 function lucymary_render_unavailable_product_choices( $product ) {
-	if ( ! $product->is_purchasable() || ! $product->is_in_stock() ) {
-		lucymary_render_product_choices( $product, true );
-	}
+	lucymary_render_product_choices( $product, true );
 }
 
 function lucymary_product_choices_before_add_to_cart() {

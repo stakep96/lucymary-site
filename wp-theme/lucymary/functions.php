@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.24' );
+define( 'LUCYMARY_VERSION', '0.2.25' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 require_once get_theme_file_path( 'inc/engraving.php' );
 
