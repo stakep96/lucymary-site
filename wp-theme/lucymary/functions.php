@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.27' );
+define( 'LUCYMARY_VERSION', '0.2.28' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 require_once get_theme_file_path( 'inc/engraving.php' );
 
@@ -108,18 +108,16 @@ add_action( 'after_setup_theme', 'lucymary_setup' );
 
 /** Links do cabeçalho, editáveis no Personalizar e compartilhados com o menu mobile. */
 function lucymary_header_link( $name ) {
-	$defaults = array( 'about' => '/#sobre', 'stores' => '/#lojas', 'contact' => '/#contato' );
-	if ( ! isset( $defaults[ $name ] ) ) { return home_url( '/' ); }
-	$default = home_url( $defaults[ $name ] );
-	$url = get_theme_mod( 'lucymary_header_' . $name . '_url', '' );
-	return $url ? lucymary_localize_url( esc_url_raw( $url ) ) : $default;
+	if ( ! in_array( $name, array( 'about', 'stores', 'contact' ), true ) ) { return ''; }
+	$url = trim( (string) get_theme_mod( 'lucymary_header_' . $name . '_url', '' ) );
+	return $url ? lucymary_localize_url( esc_url_raw( $url ) ) : '';
 }
 
 function lucymary_header_customizer( $customize ) {
 	$customize->add_section( 'lucymary_header_links', array(
 		'title'       => __( 'LucyMary: links do cabeçalho', 'lucymary' ),
 		'priority'    => 158,
-		'description' => __( 'Use URLs completas. Deixe vazio para manter o link atual de cada botão.', 'lucymary' ),
+		'description' => __( 'Use URLs completas. Um campo vazio oculta o respectivo link no cabeçalho e no menu mobile.', 'lucymary' ),
 	) );
 	foreach ( array( 'about' => __( 'Sobre', 'lucymary' ), 'stores' => __( 'Lojas', 'lucymary' ), 'contact' => __( 'Contato', 'lucymary' ) ) as $name => $label ) {
 		$key = 'lucymary_header_' . $name . '_url';

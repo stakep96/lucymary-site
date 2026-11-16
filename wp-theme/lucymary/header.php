@@ -6,6 +6,11 @@ $account_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalin
 $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : $shop_url;
 $checkout_url = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : $cart_url;
 $categories = lucymary_category_navigation_items();
+$header_links = array(
+	'about'   => lucymary_header_link( 'about' ),
+	'stores'  => lucymary_header_link( 'stores' ),
+	'contact' => lucymary_header_link( 'contact' ),
+);
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head><meta charset="<?php bloginfo( 'charset' ); ?>"><meta name="viewport" content="width=device-width, initial-scale=1"><?php wp_head(); ?></head>
@@ -15,9 +20,9 @@ $categories = lucymary_category_navigation_items();
 <header class="lm-header">
   <div class="lm-shell lm-header-main">
     <nav class="lm-institutional" aria-label="<?php esc_attr_e( 'Institucional', 'lucymary' ); ?>">
-      <a href="<?php echo esc_url( lucymary_header_link( 'about' ) ); ?>"><span class="lm-letter">L</span> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a>
-      <a href="<?php echo esc_url( lucymary_header_link( 'stores' ) ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> <?php esc_html_e( 'Lojas', 'lucymary' ); ?></a>
-      <a href="<?php echo esc_url( lucymary_header_link( 'contact' ) ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> <?php esc_html_e( 'Contato', 'lucymary' ); ?></a>
+      <?php if ( $header_links['about'] ) : ?><a href="<?php echo esc_url( $header_links['about'] ); ?>"><span class="lm-letter">L</span> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><?php endif; ?>
+      <?php if ( $header_links['stores'] ) : ?><a href="<?php echo esc_url( $header_links['stores'] ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> <?php esc_html_e( 'Lojas', 'lucymary' ); ?></a><?php endif; ?>
+      <?php if ( $header_links['contact'] ) : ?><a href="<?php echo esc_url( $header_links['contact'] ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> <?php esc_html_e( 'Contato', 'lucymary' ); ?></a><?php endif; ?>
     </nav>
     <button class="lm-icon-button lm-mobile-menu-button" type="button" data-lm-open="menu" aria-label="<?php esc_attr_e( 'Abrir menu', 'lucymary' ); ?>" aria-controls="lm-mobile-menu" aria-expanded="false"><?php echo lucymary_icon( 'menu', 24 ); ?></button>
     <a class="lm-header-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="LucyMary, início"><img src="<?php echo esc_url( lucymary_asset( 'brand/logo-vinho.png' ) ); ?>" alt="LucyMary" width="220" height="91"></a>
@@ -40,7 +45,12 @@ $categories = lucymary_category_navigation_items();
     <div class="lm-menu-brand"><img src="<?php echo esc_url( lucymary_asset( 'brand/logo-vinho.png' ) ); ?>" alt="LucyMary" width="190" height="79"><button type="button" class="lm-icon-button" data-lm-close aria-label="<?php esc_attr_e( 'Fechar menu', 'lucymary' ); ?>"><?php echo lucymary_icon( 'close', 22 ); ?></button></div>
     <div class="lm-drawer-scroll">
       <div class="lm-menu-account"><a href="<?php echo esc_url( $account_url ); ?>"><?php esc_html_e( 'Entre ou cadastre-se', 'lucymary' ); ?> <?php echo lucymary_icon( 'chevron-right', 20 ); ?></a><div><a href="<?php echo esc_url( $account_url ); ?>"><?php echo lucymary_icon( 'user', 17 ); ?> <?php esc_html_e( 'Minha conta', 'lucymary' ); ?></a><a href="<?php echo esc_url( function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'orders' ) : $account_url ); ?>"><?php esc_html_e( 'Meus pedidos', 'lucymary' ); ?></a></div></div>
-      <nav class="lm-menu-links" aria-label="<?php esc_attr_e( 'Links úteis', 'lucymary' ); ?>"><a href="<?php echo esc_url( lucymary_header_link( 'stores' ) ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> <?php esc_html_e( 'Loja', 'lucymary' ); ?></a><a href="<?php echo esc_url( lucymary_header_link( 'contact' ) ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> <?php esc_html_e( 'Contato', 'lucymary' ); ?></a><a href="<?php echo esc_url( lucymary_header_link( 'about' ) ); ?>"><span class="lm-letter">L</span> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><button type="button" data-lm-open="favorites" aria-controls="lm-favorites-drawer" aria-expanded="false"><?php echo lucymary_icon( 'heart', 17 ); ?> <?php esc_html_e( 'Favoritos', 'lucymary' ); ?></button></nav>
+      <nav class="lm-menu-links" aria-label="<?php esc_attr_e( 'Links úteis', 'lucymary' ); ?>">
+        <?php if ( $header_links['stores'] ) : ?><a href="<?php echo esc_url( $header_links['stores'] ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> <?php esc_html_e( 'Loja', 'lucymary' ); ?></a><?php endif; ?>
+        <?php if ( $header_links['contact'] ) : ?><a href="<?php echo esc_url( $header_links['contact'] ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> <?php esc_html_e( 'Contato', 'lucymary' ); ?></a><?php endif; ?>
+        <?php if ( $header_links['about'] ) : ?><a href="<?php echo esc_url( $header_links['about'] ); ?>"><span class="lm-letter">L</span> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><?php endif; ?>
+        <button type="button" data-lm-open="favorites" aria-controls="lm-favorites-drawer" aria-expanded="false"><?php echo lucymary_icon( 'heart', 17 ); ?> <?php esc_html_e( 'Favoritos', 'lucymary' ); ?></button>
+      </nav>
 	  <?php lucymary_language_switcher( 'menu' ); ?>
       <details class="lm-menu-categories" open><summary><?php esc_html_e( 'Ver categorias', 'lucymary' ); ?> <?php echo lucymary_icon( 'chevron-down', 18 ); ?></summary><nav aria-label="<?php esc_attr_e( 'Categorias', 'lucymary' ); ?>"><?php foreach ( $categories as $category ) : ?><a href="<?php echo esc_url( $category['url'] ); ?>"><?php echo esc_html( $category['title'] ); ?></a><?php endforeach; ?></nav></details>
     </div>
