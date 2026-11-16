@@ -20,7 +20,7 @@ $header_links = array(
 <header class="lm-header">
   <div class="lm-shell lm-header-main">
     <nav class="lm-institutional" aria-label="<?php esc_attr_e( 'Institucional', 'lucymary' ); ?>">
-      <?php if ( $header_links['about'] ) : ?><a href="<?php echo esc_url( $header_links['about'] ); ?>"><span class="lm-letter">L</span> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><?php endif; ?>
+      <?php if ( $header_links['about'] ) : ?><a href="<?php echo esc_url( $header_links['about'] ); ?>"><img class="lm-about-icon" src="<?php echo esc_url( lucymary_asset( 'brand/L-logo-icon.png' ) ); ?>" alt="" width="28" height="28"> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><?php endif; ?>
       <?php if ( $header_links['stores'] ) : ?><a href="<?php echo esc_url( $header_links['stores'] ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> <?php esc_html_e( 'Lojas', 'lucymary' ); ?></a><?php endif; ?>
       <?php if ( $header_links['contact'] ) : ?><a href="<?php echo esc_url( $header_links['contact'] ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> <?php esc_html_e( 'Contato', 'lucymary' ); ?></a><?php endif; ?>
     </nav>
@@ -48,7 +48,7 @@ $header_links = array(
       <nav class="lm-menu-links" aria-label="<?php esc_attr_e( 'Links úteis', 'lucymary' ); ?>">
         <?php if ( $header_links['stores'] ) : ?><a href="<?php echo esc_url( $header_links['stores'] ); ?>"><?php echo lucymary_icon( 'pin', 17 ); ?> <?php esc_html_e( 'Loja', 'lucymary' ); ?></a><?php endif; ?>
         <?php if ( $header_links['contact'] ) : ?><a href="<?php echo esc_url( $header_links['contact'] ); ?>"><?php echo lucymary_icon( 'phone', 17 ); ?> <?php esc_html_e( 'Contato', 'lucymary' ); ?></a><?php endif; ?>
-        <?php if ( $header_links['about'] ) : ?><a href="<?php echo esc_url( $header_links['about'] ); ?>"><span class="lm-letter">L</span> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><?php endif; ?>
+        <?php if ( $header_links['about'] ) : ?><a href="<?php echo esc_url( $header_links['about'] ); ?>"><img class="lm-about-icon" src="<?php echo esc_url( lucymary_asset( 'brand/L-logo-icon.png' ) ); ?>" alt="" width="28" height="28"> <?php esc_html_e( 'Sobre', 'lucymary' ); ?></a><?php endif; ?>
         <button type="button" data-lm-open="favorites" aria-controls="lm-favorites-drawer" aria-expanded="false"><?php echo lucymary_icon( 'heart', 17 ); ?> <?php esc_html_e( 'Favoritos', 'lucymary' ); ?></button>
       </nav>
 	  <?php lucymary_language_switcher( 'menu' ); ?>

@@ -25,8 +25,8 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-institutional,.lm-header-actions{display:flex;align-items:center;gap:26px}
 .lm-institutional a{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:#56434e;font-size:11px}
 .lm-institutional a:hover,.lm-category-nav a:hover{color:var(--lm-wine)}
-.lm-institutional svg,.lm-letter{color:var(--lm-wine)}
-.lm-letter{font-family:Georgia,serif;font-style:italic;font-size:23px;line-height:1}
+.lm-institutional svg{color:var(--lm-wine)}
+.lm-about-icon{display:block;flex:none;width:28px;height:28px;object-fit:contain}
 .lm-header-actions{justify-self:end;gap:19px}
 .lm-language-switcher{position:relative;color:var(--lm-wine);font-size:12px}
 .lm-language-switcher summary{display:flex;align-items:center;gap:7px;min-height:36px;padding:6px 9px;border:1px solid var(--lm-line);border-radius:4px;background:#fff;cursor:pointer;list-style:none;white-space:nowrap}
@@ -68,6 +68,7 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-menu-links a,.lm-menu-links button{display:flex;align-items:center;gap:14px;min-height:45px;color:#676068;font-size:13px}
 .lm-menu-links button{width:100%;padding:0;border:0;background:none;text-align:left}
 .lm-menu-links svg{color:var(--lm-wine)}
+.lm-menu-links .lm-about-icon{width:32px;height:32px;margin-left:-1px;margin-right:-1px}
 .lm-menu-categories{padding:0 25px 28px}
 .lm-menu-categories summary{display:flex;justify-content:space-between;align-items:center;min-height:54px;list-style:none;cursor:pointer;font-size:13px}
 .lm-menu-categories summary::-webkit-details-marker{display:none}
