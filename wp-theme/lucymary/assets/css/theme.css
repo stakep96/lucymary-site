@@ -275,6 +275,7 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 .lm-attribute-buttons button[aria-pressed=true]{border-color:var(--lm-wine);background:var(--lm-wine);color:#fff}
 .lm-attribute-buttons button:disabled{opacity:.4}
 .lm-variation-enhanced .variations tr.lm-enhanced-row{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important}
+.lm-variation-enhanced .variations tr.lm-engraving-variation-row{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important}
 .lm-product-purchase button.is-loading::after{content:'';display:inline-block;width:14px;height:14px;margin-left:8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:middle;animation:lm-spin .8s linear infinite}
 @keyframes lm-spin{to{transform:rotate(360deg)}}
 .lm-ring-selector{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;margin:6px 0 6px;border:1px solid #e0d6dc;border-radius:5px}

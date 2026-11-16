@@ -10,6 +10,7 @@ return array(
 		'O que deseja gravar?' => 'What would you like engraved?',
 		'Até 4 caracteres: iniciais, letras ou símbolos.' => 'Up to 4 characters: initials, letters, or symbols.',
 		'Informe até 4 letras ou símbolos para a gravação.' => 'Enter up to 4 letters or symbols for engraving.',
+		'Confirme a opção de gravação da peça antes de continuar.' => 'Confirm the engraving option before continuing.',
 		'Informe o texto da gravação antes de continuar.' => 'Enter the engraving text to continue.',
 		'Use até 4 letras ou símbolos para a gravação.' => 'Use up to 4 letters or symbols for engraving.',
 		'Gravação na peça' => 'Engraving',

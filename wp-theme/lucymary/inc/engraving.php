@@ -3,7 +3,28 @@
 defined( 'ABSPATH' ) || exit;
 
 function lucymary_engraving_enabled( $product ) {
-	return $product && $product->is_type( array( 'simple', 'variable' ) ) && 'yes' === $product->get_meta( '_lucymary_engraving_enabled', true );
+	return $product && $product->is_type( array( 'simple', 'variable' ) ) && ( 'yes' === $product->get_meta( '_lucymary_engraving_enabled', true ) || lucymary_engraving_variation_choice( $product ) );
+}
+
+/** A priced Sim/Não variation may be controlled by the theme checkbox. */
+function lucymary_engraving_variation_choice( $product ) {
+	if ( ! $product || ! $product->is_type( 'variable' ) ) { return null; }
+	foreach ( $product->get_attributes() as $attribute ) {
+		$name = $attribute->get_name();
+		if ( ! $attribute->get_variation() || 'personalizacao' !== sanitize_title( preg_replace( '/^pa_/', '', $name ) ) ) { continue; }
+		$choices = lucymary_product_choice_attributes( $product, true );
+		if ( empty( $choices[ $name ]['options'] ) ) { continue; }
+		$values = array();
+		foreach ( $choices[ $name ]['options'] as $value => $label ) {
+			$label_key = sanitize_title( $label );
+			if ( in_array( $label_key, array( 'sim', 'yes' ), true ) ) { $values['yes'] = $value; }
+			if ( in_array( $label_key, array( 'nao', 'no' ), true ) ) { $values['no'] = $value; }
+		}
+		if ( isset( $values['yes'], $values['no'] ) ) {
+			return array( 'field' => 'attribute_' . sanitize_title( $name ), 'yes' => $values['yes'], 'no' => $values['no'] );
+		}
+	}
+	return null;
 }
 
 function lucymary_engraving_product_setting() {
@@ -27,13 +48,29 @@ add_action( 'woocommerce_admin_process_product_object', 'lucymary_save_engraving
 function lucymary_engraving_field() {
 	global $product;
 	if ( ! lucymary_engraving_enabled( $product ) ) { return; }
-	echo '<div class="lm-engraving" data-lm-engraving>';
+	$variation_choice = lucymary_engraving_variation_choice( $product );
+	echo '<div class="lm-engraving" data-lm-engraving';
+	if ( $variation_choice ) {
+		echo ' data-lm-engraving-attribute="' . esc_attr( $variation_choice['field'] ) . '" data-lm-engraving-yes="' . esc_attr( $variation_choice['yes'] ) . '" data-lm-engraving-no="' . esc_attr( $variation_choice['no'] ) . '"';
+	}
+	echo '>';
 	echo '<label class="lm-engraving-toggle" for="lm-engrave"><input id="lm-engrave" type="checkbox" name="lm_engrave" value="yes" data-lm-engraving-toggle> <span>' . esc_html__( 'Gravar nome na peça', 'lucymary' ) . '</span></label>';
 	echo '<div class="lm-engraving-input" data-lm-engraving-input><label for="lm-engraving-text">' . esc_html__( 'O que deseja gravar?', 'lucymary' ) . '</label>';
 	echo '<input id="lm-engraving-text" type="text" name="lm_engraving_text" maxlength="4" autocomplete="off" data-lm-engraving-text aria-describedby="lm-engraving-help">';
 	echo '<p id="lm-engraving-help">' . esc_html__( 'Até 4 caracteres: iniciais, letras ou símbolos.', 'lucymary' ) . '</p></div></div>';
 }
-add_action( 'woocommerce_before_add_to_cart_button', 'lucymary_engraving_field', 8 );
+
+function lucymary_engraving_simple_field() {
+	global $product;
+	if ( $product && $product->is_type( 'simple' ) ) { lucymary_engraving_field(); }
+}
+add_action( 'woocommerce_before_add_to_cart_button', 'lucymary_engraving_simple_field', 8 );
+
+function lucymary_engraving_variable_field() {
+	global $product;
+	if ( $product && $product->is_type( 'variable' ) ) { lucymary_engraving_field(); }
+}
+add_action( 'woocommerce_after_variations_table', 'lucymary_engraving_variable_field', 8 );
 
 function lucymary_posted_engraving( $product ) {
 	if ( ! lucymary_engraving_enabled( $product ) || ! isset( $_POST['lm_engrave'] ) || ! is_scalar( $_POST['lm_engrave'] ) || 'yes' !== sanitize_text_field( wp_unslash( $_POST['lm_engrave'] ) ) ) { return null; }
@@ -46,6 +83,16 @@ function lucymary_posted_engraving( $product ) {
 function lucymary_validate_engraving( $passed, $product_id ) {
 	if ( ! $passed ) { return false; }
 	$product = wc_get_product( $product_id );
+	$variation_choice = lucymary_engraving_variation_choice( $product );
+	if ( $variation_choice && ( isset( $_POST[ $variation_choice['field'] ] ) || isset( $_POST['lm_engrave'] ) ) ) {
+		$field = $variation_choice['field'];
+		$posted_value = isset( $_POST[ $field ] ) && is_scalar( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
+		$engrave = isset( $_POST['lm_engrave'] ) && is_scalar( $_POST['lm_engrave'] ) && 'yes' === sanitize_text_field( wp_unslash( $_POST['lm_engrave'] ) );
+		if ( $posted_value !== ( $engrave ? $variation_choice['yes'] : $variation_choice['no'] ) ) {
+			wc_add_notice( __( 'Confirme a opção de gravação da peça antes de continuar.', 'lucymary' ), 'error' );
+			return false;
+		}
+	}
 	if ( $product && false === lucymary_posted_engraving( $product ) ) {
 		wc_add_notice( __( 'Informe até 4 letras ou símbolos para a gravação.', 'lucymary' ), 'error' );
 		return false;

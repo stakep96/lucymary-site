@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.25' );
+define( 'LUCYMARY_VERSION', '0.2.26' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 require_once get_theme_file_path( 'inc/engraving.php' );
 
@@ -204,6 +204,10 @@ function lucymary_assets() {
 		wp_enqueue_script( 'wc-add-to-cart' );
 		wp_enqueue_script( 'wc-cart-fragments' );
 		$script_dependencies[] = 'wc-add-to-cart';
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			wp_enqueue_script( 'wc-add-to-cart-variation' );
+			$script_dependencies[] = 'wc-add-to-cart-variation';
+		}
 	}
 	wp_enqueue_style( 'lucymary-theme', $base . '/assets/css/theme.css', array(), LUCYMARY_VERSION );
 	wp_enqueue_script( 'lucymary-theme', $base . '/assets/js/theme.js', $script_dependencies, LUCYMARY_VERSION, true );
@@ -252,9 +256,6 @@ function lucymary_assets() {
 		),
 		'rulerIcon' => lucymary_icon( 'ruler', 17 ),
 	) );
-	if ( function_exists( 'is_product' ) && is_product() ) {
-		wp_enqueue_script( 'wc-add-to-cart-variation' );
-	}
 }
 add_action( 'wp_enqueue_scripts', 'lucymary_assets' );
 

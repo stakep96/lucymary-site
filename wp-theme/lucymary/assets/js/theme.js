@@ -479,9 +479,12 @@
   if (variationForm) {
     const table = q('.variations', variationForm);
     const rows = qa('tr', table).filter((row) => q('select', row));
+    const engravingChoice = q('[data-lm-engraving-attribute]', variationForm);
+    const engravingSelect = engravingChoice ? rows.map((row) => q('select', row)).find((select) => select?.name === engravingChoice.dataset.lmEngravingAttribute) : null;
     const insertBefore = table;
     rows.forEach((row) => {
       const select = q('select', row), label = q('label', row)?.textContent?.trim() || copy.option || 'Opção';
+      if (select === engravingSelect) { row.classList.add('lm-engraving-variation-row'); return; }
       const options = qa('option', select).filter((option) => option.value);
       if (!options.length) return;
       const wrap = document.createElement('div'); wrap.className = 'lm-attribute-choice';
@@ -537,6 +540,29 @@
       render();
     });
     if (rows.length) variationForm.classList.add('lm-variation-enhanced');
+    if (engravingSelect) {
+      const toggle = q('[data-lm-engraving-toggle]', engravingChoice);
+      const yes = engravingChoice.dataset.lmEngravingYes;
+      const no = engravingChoice.dataset.lmEngravingNo;
+      if (toggle && yes && no) {
+        toggle.checked = false;
+        const updateVariation = () => {
+          const value = toggle.checked ? yes : no;
+          if (engravingSelect.value !== value) {
+            engravingSelect.value = value;
+            engravingSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        };
+        toggle.addEventListener('change', updateVariation);
+        if (window.jQuery) window.jQuery(variationForm).on('wc_variation_form', updateVariation);
+        window.setTimeout(updateVariation, 0);
+        const reset = q('.reset_variations', variationForm);
+        reset?.addEventListener('click', () => window.setTimeout(() => {
+          toggle.checked = false;
+          toggle.dispatchEvent(new Event('change', { bubbles: true }));
+        }, 0));
+      }
+    }
     // Keep the selected ring while changing a material; WooCommerce resolves the variation.
     const initialPrice = q('.lm-main-price')?.innerHTML;
     if (window.jQuery) window.jQuery(variationForm).on('found_variation', (_, variation) => {
@@ -606,6 +632,8 @@
     const field = q('[data-lm-engraving-text]', container);
     const inputWrap = q('[data-lm-engraving-input]', container);
     if (!toggle || !field || !inputWrap) return;
+    inputWrap.hidden = !toggle.checked;
+    field.disabled = !toggle.checked;
     toggle.addEventListener('change', () => {
       inputWrap.hidden = !toggle.checked;
       field.disabled = !toggle.checked;

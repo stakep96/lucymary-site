@@ -39,6 +39,13 @@ function lucymary_product_choice_attributes( $product, $include_variation = fals
 function lucymary_render_product_choices( $product, $include_variation = false ) {
 	$attributes = lucymary_product_choice_attributes( $product, $include_variation );
 	if ( ! $attributes ) { return; }
+	$engraving_variation = $include_variation && function_exists( 'lucymary_engraving_variation_choice' ) ? lucymary_engraving_variation_choice( $product ) : null;
+	if ( $engraving_variation ) {
+		foreach ( array_keys( $attributes ) as $name ) {
+			if ( $engraving_variation['field'] === 'attribute_' . sanitize_title( $name ) ) { unset( $attributes[ $name ] ); }
+		}
+		if ( ! $attributes ) { return; }
+	}
 	echo '<div class="lm-descriptive-choices">';
 	foreach ( $attributes as $name => $attribute ) {
 		$key = sanitize_title( $name );
