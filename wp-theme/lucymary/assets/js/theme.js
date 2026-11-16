@@ -632,6 +632,7 @@
     const field = q('[data-lm-engraving-text]', container);
     const inputWrap = q('[data-lm-engraving-input]', container);
     if (!toggle || !field || !inputWrap) return;
+    const maxCharacters = Number(container.dataset.lmEngravingMax) || 5;
     inputWrap.hidden = !toggle.checked;
     field.disabled = !toggle.checked;
     toggle.addEventListener('change', () => {
@@ -642,7 +643,7 @@
     });
     field.addEventListener('input', () => {
       const characters = Array.from(field.value);
-      if (characters.length > 4) field.value = characters.slice(0, 4).join('');
+      if (characters.length > maxCharacters) field.value = characters.slice(0, maxCharacters).join('');
     });
   });
   const selectionDialog = q('.lm-selection-dialog');
@@ -652,8 +653,9 @@
     const engraving = q('[data-lm-engraving]', form);
     if (engraving && q('[data-lm-engraving-toggle]', engraving)?.checked) {
       const value = q('[data-lm-engraving-text]', engraving)?.value.trim() || '';
+      const maxCharacters = Number(engraving.dataset.lmEngravingMax) || 5;
       if (!value) return copy.engravingRequired;
-      if (Array.from(value).length > 4 || !/^[\p{L}\p{M}\p{S}\p{P} ]+$/u.test(value)) return copy.engravingInvalid;
+      if (Array.from(value).length > maxCharacters || !/^[\p{L}\p{M}\p{S}\p{P} ]+$/u.test(value)) return copy.engravingInvalid;
     }
     if (!form.matches('.variations_form')) return null;
     if (qa('.variations select', form).some((select) => !select.value)) return copy.chooseProductOptions;

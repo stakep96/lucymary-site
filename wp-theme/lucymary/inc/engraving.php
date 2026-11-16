@@ -2,6 +2,31 @@
 /** Optional, per-product engraving stored with the WooCommerce cart and order item. */
 defined( 'ABSPATH' ) || exit;
 
+function lucymary_engraving_limit( $value ) {
+	if ( '' === $value || null === $value ) { return 5; }
+	return max( 1, min( 20, (int) $value ) );
+}
+
+function lucymary_engraving_max_characters() {
+	return lucymary_engraving_limit( get_theme_mod( 'lucymary_engraving_max_characters', 5 ) );
+}
+
+function lucymary_engraving_customizer( $customize ) {
+	$customize->add_section( 'lucymary_engraving_settings', array(
+		'title'       => __( 'LucyMary: gravação na peça', 'lucymary' ),
+		'priority'    => 162,
+		'description' => __( 'Defina quantos caracteres o cliente pode informar para gravar na peça. A alteração vale para todos os produtos com gravação.', 'lucymary' ),
+	) );
+	$customize->add_setting( 'lucymary_engraving_max_characters', array( 'default' => 5, 'sanitize_callback' => 'lucymary_engraving_limit' ) );
+	$customize->add_control( 'lucymary_engraving_max_characters', array(
+		'label'       => __( 'Limite de caracteres da gravação', 'lucymary' ),
+		'section'     => 'lucymary_engraving_settings',
+		'type'        => 'number',
+		'input_attrs' => array( 'min' => 1, 'max' => 20, 'step' => 1 ),
+	) );
+}
+add_action( 'customize_register', 'lucymary_engraving_customizer' );
+
 function lucymary_engraving_enabled( $product ) {
 	return $product && $product->is_type( array( 'simple', 'variable' ) ) && ( 'yes' === $product->get_meta( '_lucymary_engraving_enabled', true ) || lucymary_engraving_variation_choice( $product ) );
 }
@@ -49,15 +74,16 @@ function lucymary_engraving_field() {
 	global $product;
 	if ( ! lucymary_engraving_enabled( $product ) ) { return; }
 	$variation_choice = lucymary_engraving_variation_choice( $product );
-	echo '<div class="lm-engraving" data-lm-engraving';
+	$max_characters = lucymary_engraving_max_characters();
+	echo '<div class="lm-engraving" data-lm-engraving data-lm-engraving-max="' . esc_attr( $max_characters ) . '"';
 	if ( $variation_choice ) {
 		echo ' data-lm-engraving-attribute="' . esc_attr( $variation_choice['field'] ) . '" data-lm-engraving-yes="' . esc_attr( $variation_choice['yes'] ) . '" data-lm-engraving-no="' . esc_attr( $variation_choice['no'] ) . '"';
 	}
 	echo '>';
 	echo '<label class="lm-engraving-toggle" for="lm-engrave"><input id="lm-engrave" type="checkbox" name="lm_engrave" value="yes" data-lm-engraving-toggle> <span>' . esc_html__( 'Gravar nome na peça', 'lucymary' ) . '</span></label>';
 	echo '<div class="lm-engraving-input" data-lm-engraving-input><label for="lm-engraving-text">' . esc_html__( 'O que deseja gravar?', 'lucymary' ) . '</label>';
-	echo '<input id="lm-engraving-text" type="text" name="lm_engraving_text" maxlength="4" autocomplete="off" data-lm-engraving-text aria-describedby="lm-engraving-help">';
-	echo '<p id="lm-engraving-help">' . esc_html__( 'Até 4 caracteres: iniciais, letras ou símbolos.', 'lucymary' ) . '</p></div></div>';
+	echo '<input id="lm-engraving-text" type="text" name="lm_engraving_text" maxlength="' . esc_attr( 2 * $max_characters ) . '" autocomplete="off" data-lm-engraving-text aria-describedby="lm-engraving-help">';
+	echo '<p id="lm-engraving-help">' . esc_html( sprintf( __( 'Até %d caracteres: iniciais, letras ou símbolos.', 'lucymary' ), $max_characters ) ) . '</p></div></div>';
 }
 
 function lucymary_engraving_simple_field() {
@@ -76,7 +102,7 @@ function lucymary_posted_engraving( $product ) {
 	if ( ! lucymary_engraving_enabled( $product ) || ! isset( $_POST['lm_engrave'] ) || ! is_scalar( $_POST['lm_engrave'] ) || 'yes' !== sanitize_text_field( wp_unslash( $_POST['lm_engrave'] ) ) ) { return null; }
 	if ( ! isset( $_POST['lm_engraving_text'] ) || ! is_scalar( $_POST['lm_engraving_text'] ) ) { return false; }
 	$value = trim( (string) wp_unslash( $_POST['lm_engraving_text'] ) );
-	if ( ! preg_match( '/\A[\p{L}\p{M}\p{S}\p{P} ]{1,4}\z/u', $value ) || sanitize_text_field( $value ) !== $value ) { return false; }
+	if ( ! preg_match( '/\A[\p{L}\p{M}\p{S}\p{P} ]{1,' . lucymary_engraving_max_characters() . '}\z/u', $value ) || sanitize_text_field( $value ) !== $value ) { return false; }
 	return $value;
 }
 
@@ -94,7 +120,7 @@ function lucymary_validate_engraving( $passed, $product_id ) {
 		}
 	}
 	if ( $product && false === lucymary_posted_engraving( $product ) ) {
-		wc_add_notice( __( 'Informe até 4 letras ou símbolos para a gravação.', 'lucymary' ), 'error' );
+		wc_add_notice( sprintf( __( 'Informe até %d letras ou símbolos para a gravação.', 'lucymary' ), lucymary_engraving_max_characters() ), 'error' );
 		return false;
 	}
 	return $passed;

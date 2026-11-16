@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.26' );
+define( 'LUCYMARY_VERSION', '0.2.27' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 require_once get_theme_file_path( 'inc/engraving.php' );
 
@@ -240,7 +240,7 @@ function lucymary_assets() {
 			'shippingNoRates' => __( 'Não foi possível estimar o frete aqui. Confira as opções no carrinho.', 'lucymary' ),
 			'chooseProductOptions' => __( 'Escolha as opções da peça para continuar.', 'lucymary' ),
 			'engravingRequired' => __( 'Informe o texto da gravação antes de continuar.', 'lucymary' ),
-			'engravingInvalid' => __( 'Use até 4 letras ou símbolos para a gravação.', 'lucymary' ),
+			'engravingInvalid' => sprintf( __( 'Use até %d letras ou símbolos para a gravação.', 'lucymary' ), lucymary_engraving_max_characters() ),
 			'waitForVariation' => __( 'Aguarde a confirmação da opção selecionada e tente novamente.', 'lucymary' ),
 			'cartUpdateError' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ),
 			'cartQuantityDecrease' => __( 'Diminuir quantidade', 'lucymary' ),
