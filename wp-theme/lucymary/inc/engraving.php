@@ -82,8 +82,8 @@ function lucymary_engraving_field() {
 	echo '>';
 	echo '<label class="lm-engraving-toggle" for="lm-engrave"><input id="lm-engrave" type="checkbox" name="lm_engrave" value="yes" data-lm-engraving-toggle> <span>' . esc_html__( 'Gravar nome na peça', 'lucymary' ) . '</span></label>';
 	echo '<div class="lm-engraving-input" data-lm-engraving-input><label for="lm-engraving-text">' . esc_html__( 'O que deseja gravar?', 'lucymary' ) . '</label>';
-	echo '<input id="lm-engraving-text" type="text" name="lm_engraving_text" maxlength="' . esc_attr( 2 * $max_characters ) . '" autocomplete="off" data-lm-engraving-text aria-describedby="lm-engraving-help">';
-	echo '<p id="lm-engraving-help">' . esc_html( sprintf( __( 'Até %d caracteres: iniciais, letras ou símbolos.', 'lucymary' ), $max_characters ) ) . '</p></div></div>';
+	echo '<input id="lm-engraving-text" type="text" name="lm_engraving_text" maxlength="255" autocomplete="off" data-lm-engraving-text aria-describedby="lm-engraving-help">';
+	echo '<p id="lm-engraving-help">' . esc_html( sprintf( __( 'Até %d caracteres: iniciais, letras ou símbolos. Espaços entre palavras não contam.', 'lucymary' ), $max_characters ) ) . '</p></div></div>';
 }
 
 function lucymary_engraving_simple_field() {
@@ -102,7 +102,8 @@ function lucymary_posted_engraving( $product ) {
 	if ( ! lucymary_engraving_enabled( $product ) || ! isset( $_POST['lm_engrave'] ) || ! is_scalar( $_POST['lm_engrave'] ) || 'yes' !== sanitize_text_field( wp_unslash( $_POST['lm_engrave'] ) ) ) { return null; }
 	if ( ! isset( $_POST['lm_engraving_text'] ) || ! is_scalar( $_POST['lm_engraving_text'] ) ) { return false; }
 	$value = trim( (string) wp_unslash( $_POST['lm_engraving_text'] ) );
-	if ( ! preg_match( '/\A[\p{L}\p{M}\p{S}\p{P} ]{1,' . lucymary_engraving_max_characters() . '}\z/u', $value ) || sanitize_text_field( $value ) !== $value ) { return false; }
+	$maximum = lucymary_engraving_max_characters();
+	if ( ! preg_match( '/\A[\p{L}\p{M}\p{S}\p{P} ]+\z/u', $value ) || sanitize_text_field( $value ) !== $value || preg_match_all( '/[^ ]/u', $value ) > $maximum || preg_match_all( '/./u', $value ) > 255 ) { return false; }
 	return $value;
 }
 
@@ -120,7 +121,7 @@ function lucymary_validate_engraving( $passed, $product_id ) {
 		}
 	}
 	if ( $product && false === lucymary_posted_engraving( $product ) ) {
-		wc_add_notice( sprintf( __( 'Informe até %d letras ou símbolos para a gravação.', 'lucymary' ), lucymary_engraving_max_characters() ), 'error' );
+		wc_add_notice( sprintf( __( 'Informe até %d letras ou símbolos para a gravação; espaços não contam.', 'lucymary' ), lucymary_engraving_max_characters() ), 'error' );
 		return false;
 	}
 	return $passed;

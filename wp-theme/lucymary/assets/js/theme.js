@@ -475,6 +475,64 @@
     inputs.forEach((input) => input.addEventListener('input', () => update(input))); update();
   });
 
+  function createSizeGuideDialog() {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'lm-size-dialog';
+    const close = document.createElement('button');
+    close.type = 'button'; close.className = 'lm-size-close'; close.textContent = '×';
+    close.setAttribute('aria-label', copy.ringClose);
+    close.addEventListener('click', () => dialog.close());
+    const title = document.createElement('h2'); title.textContent = copy.ringGuide;
+    const intro = document.createElement('p'); intro.className = 'lm-size-intro'; intro.textContent = copy.ringDialogText;
+    dialog.append(close, title, intro);
+    const section = (eyebrow, heading) => {
+      const article = document.createElement('section'); article.className = 'lm-size-method';
+      const small = document.createElement('span'); small.className = 'lm-size-eyebrow'; small.textContent = eyebrow;
+      const h3 = document.createElement('h3'); h3.textContent = heading;
+      article.append(small, h3); dialog.append(article);
+      return article;
+    };
+    const paragraph = (parent, value, className = '') => {
+      const p = document.createElement('p'); p.textContent = value;
+      if (className) p.className = className;
+      parent.append(p);
+    };
+    const stringMethod = section(copy.ringStringMethod, copy.ringStringTitle);
+    paragraph(stringMethod, copy.ringStringIntro);
+    paragraph(stringMethod, copy.ringStringStep1);
+    paragraph(stringMethod, copy.ringStringStep2);
+    const tables = document.createElement('div'); tables.className = 'lm-size-tables';
+    const locale = document.documentElement.lang.startsWith('en') ? 'en-US' : 'pt-BR';
+    for (let start = 10; start <= 35; start += 9) {
+      const table = document.createElement('table');
+      const thead = document.createElement('thead'); const header = document.createElement('tr');
+      for (const label of [copy.ringMeasureCm, copy.ringSize]) {
+        const th = document.createElement('th'); th.scope = 'col'; th.textContent = label; header.append(th);
+      }
+      thead.append(header); table.append(thead);
+      const tbody = document.createElement('tbody');
+      for (let size = start; size < Math.min(start + 9, 36); size++) {
+        const tr = document.createElement('tr');
+        for (const value of [new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format((size + 40) / 10) + ' cm', String(size)]) {
+          const td = document.createElement('td'); td.textContent = value; tr.append(td);
+        }
+        tbody.append(tr);
+      }
+      table.append(tbody); tables.append(table);
+    }
+    stringMethod.append(tables);
+    paragraph(stringMethod, copy.ringMeasureWarning, 'lm-size-note');
+    const printMethod = section(copy.ringPrintMethod, copy.ringPrintTitle);
+    for (const line of [copy.ringPrintStep1, copy.ringPrintStep2, copy.ringPrintStep3, copy.ringPrintStep4, copy.ringPrintStep5]) paragraph(printMethod, line);
+    const pdf = document.createElement('a'); pdf.className = 'lm-size-pdf'; pdf.href = lucymaryTheme.sizeGuidePdfUrl;
+    pdf.target = '_blank'; pdf.rel = 'noopener noreferrer'; pdf.textContent = copy.ringPrintOpen;
+    printMethod.append(pdf);
+    paragraph(printMethod, copy.ringPrintSettings, 'lm-size-note');
+    paragraph(printMethod, copy.ringPrintWarning, 'lm-size-note');
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    return dialog;
+  }
+
   const variationForm = q('form.variations_form');
   if (variationForm) {
     const table = q('.variations', variationForm);
@@ -520,10 +578,7 @@
         track.addEventListener('touchend', (event) => { if (touchX === null) return; const dx = event.changedTouches[0].clientX - touchX; if (Math.abs(dx) > 30) advance(dx > 0 ? -1 : 1); touchX = null; }, { passive: true });
         selector.append(prev, track, next); wrap.appendChild(selector);
         const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.innerHTML = lucymaryTheme.rulerIcon; guide.append(document.createTextNode(copy.ringGuide));
-        const dialog = document.createElement('dialog'); dialog.className = 'lm-size-dialog';
-        const close = document.createElement('button'); close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', copy.ringClose); close.addEventListener('click', () => dialog.close());
-        const title = document.createElement('h2'); title.textContent = copy.ringGuide; const text = document.createElement('p'); text.textContent = copy.ringDialogText;
-        dialog.append(close, title, text); guide.addEventListener('click', () => dialog.showModal()); wrap.append(guide, dialog);
+        const dialog = createSizeGuideDialog(); guide.addEventListener('click', () => dialog.showModal()); wrap.append(guide, dialog);
       } else { buttons = document.createElement('div'); buttons.className = 'lm-attribute-buttons'; wrap.appendChild(buttons); }
       insertBefore.parentNode.insertBefore(wrap, insertBefore); row.classList.add('lm-enhanced-row');
       select.addEventListener('change', () => {
@@ -617,10 +672,7 @@
         track.addEventListener('touchend', (event) => { if (touchX !== null && Math.abs(event.changedTouches[0].clientX - touchX) > 30) advance(event.changedTouches[0].clientX > touchX ? -1 : 1); touchX = null; }, { passive: true });
         selector.append(prev, track, next); enhanced.append(selector);
         const guide = document.createElement('button'); guide.type = 'button'; guide.className = 'lm-ring-guide'; guide.innerHTML = lucymaryTheme.rulerIcon; guide.append(document.createTextNode(copy.ringGuide));
-        const dialog = document.createElement('dialog'); dialog.className = 'lm-size-dialog';
-        const close = document.createElement('button'); close.type = 'button'; close.textContent = '×'; close.setAttribute('aria-label', copy.ringClose); close.addEventListener('click', () => dialog.close());
-        const title = document.createElement('h2'); title.textContent = copy.ringGuide; const info = document.createElement('p'); info.textContent = copy.ringDialogText;
-        dialog.append(close, title, info); guide.addEventListener('click', () => dialog.showModal()); enhanced.append(guide, dialog);
+        const dialog = createSizeGuideDialog(); guide.addEventListener('click', () => dialog.showModal()); enhanced.append(guide, dialog);
       } else { enhanced.append(buttons); }
       row.insertBefore(enhanced, select); row.classList.add('lm-enhanced-choice');
       select.tabIndex = -1; select.setAttribute('aria-hidden', 'true');
@@ -642,8 +694,9 @@
       else field.value = '';
     });
     field.addEventListener('input', () => {
-      const characters = Array.from(field.value);
-      if (characters.length > maxCharacters) field.value = characters.slice(0, maxCharacters).join('');
+      let count = 0;
+      const normalized = Array.from(field.value.replace(/ {2,}/g, ' ')).filter((character) => character === ' ' || ++count <= maxCharacters).join('');
+      if (normalized !== field.value) field.value = normalized;
     });
   });
   const selectionDialog = q('.lm-selection-dialog');
@@ -655,7 +708,7 @@
       const value = q('[data-lm-engraving-text]', engraving)?.value.trim() || '';
       const maxCharacters = Number(engraving.dataset.lmEngravingMax) || 5;
       if (!value) return copy.engravingRequired;
-      if (Array.from(value).length > maxCharacters || !/^[\p{L}\p{M}\p{S}\p{P} ]+$/u.test(value)) return copy.engravingInvalid;
+      if (Array.from(value).filter((character) => character !== ' ').length > maxCharacters || Array.from(value).length > 255 || !/^[\p{L}\p{M}\p{S}\p{P} ]+$/u.test(value)) return copy.engravingInvalid;
     }
     if (!form.matches('.variations_form')) return null;
     if (qa('.variations select', form).some((select) => !select.value)) return copy.chooseProductOptions;

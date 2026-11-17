@@ -281,16 +281,31 @@ body.lm-pointer-navigation :focus-visible{outline:none}
 @keyframes lm-spin{to{transform:rotate(360deg)}}
 .lm-ring-selector{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;margin:6px 0 6px;border:1px solid #e0d6dc;border-radius:5px}
 .lm-ring-selector>button{border:0;background:#fff;color:var(--lm-wine)}
+.lm-ring-selector>button:first-child{border-right:1px solid #e9e2e6}
+.lm-ring-selector>button:last-child{border-left:1px solid #e9e2e6}
 .lm-ring-track{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-width:0;touch-action:pan-y}
 .lm-ring-track button{position:relative;height:42px;min-width:0;border:0;border-right:1px solid #e9e2e6;background:#fff;color:#443b41;font-size:12px}
 .lm-ring-track button:nth-child(4){outline:1px solid var(--lm-wine);border-radius:4px;color:var(--lm-wine);font-weight:600;z-index:1}
 .lm-ring-track button:nth-child(4)::before{position:absolute;top:-9px;left:50%;width:0;height:0;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--lm-wine);content:''}
 .lm-ring-guide{display:inline-flex;align-items:center;gap:7px;margin:4px 0 8px;border:0;background:transparent;color:var(--lm-wine);font-size:12px}
-.lm-size-dialog{width:min(90vw,430px);border:1px solid var(--lm-line);border-radius:12px;padding:30px;background:#fff;color:var(--lm-ink);box-shadow:0 24px 70px #210c1c38}
+.lm-size-dialog{width:min(calc(100% - 28px),760px);max-height:calc(100dvh - 28px);overflow-y:auto;border:1px solid var(--lm-line);border-radius:12px;padding:28px;background:#fff;color:var(--lm-ink);box-shadow:0 24px 70px #210c1c38}
 .lm-size-dialog::backdrop{background:#1c1219a6;backdrop-filter:blur(3px)}
-.lm-size-dialog h2{margin:8px 0 14px;color:var(--lm-wine);font-size:22px;font-weight:500}
-.lm-size-dialog p{color:var(--lm-muted);line-height:1.7}
-.lm-size-dialog button{float:right;border:1px solid var(--lm-line);border-radius:5px;background:#fff;color:var(--lm-wine);padding:7px 11px}
+.lm-size-dialog h2{margin:4px 42px 8px 0;color:var(--lm-wine);font-size:24px;font-weight:500}
+.lm-size-dialog p{margin:0 0 10px;color:var(--lm-muted);font-size:13px;line-height:1.65}
+.lm-size-dialog .lm-size-close{float:right;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:50%;background:var(--lm-soft);color:var(--lm-wine);font-size:22px;cursor:pointer}
+.lm-size-intro{margin-bottom:18px!important}
+.lm-size-method{margin-top:20px;border-top:1px solid var(--lm-line);padding-top:18px}
+.lm-size-eyebrow{display:block;margin-bottom:6px;color:var(--lm-wine);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.lm-size-method h3{margin:0 0 12px;color:var(--lm-ink);font-size:18px;font-weight:600}
+.lm-size-tables{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.lm-size-tables table{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
+.lm-size-tables th,.lm-size-tables td{padding:6px 8px;border-bottom:1px solid var(--lm-line)}
+.lm-size-tables th{color:var(--lm-wine);font-size:10px}
+.lm-size-tables tr:nth-child(even){background:#faf7f9}
+.lm-size-dialog .lm-size-note{margin:12px 0 0;border-left:2px solid var(--lm-wine);padding:6px 10px;background:#faf7f9;font-size:12px}
+.lm-size-pdf{display:inline-flex;align-items:center;min-height:38px;margin:12px 0;padding:0 16px;border-radius:4px;background:var(--lm-wine);color:#fff!important;font-size:12px;font-weight:600;text-decoration:none}
+.lm-size-pdf:hover{background:#8b1c57}
+@media(max-width:620px){.lm-size-dialog{padding:20px}.lm-size-tables{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 .lm-selection-dialog{width:min(100% - 32px,420px);max-height:calc(100dvh - 32px);border:1px solid var(--lm-line);border-radius:12px;padding:35px 32px 30px;background:#fff;color:var(--lm-ink);box-shadow:0 26px 80px #210c1c38;text-align:left}
 .lm-selection-dialog::backdrop{background:#1c1219a6;backdrop-filter:blur(3px)}
 .lm-selection-close{position:absolute;right:18px;top:18px;display:grid;place-items:center;width:32px;height:32px;border:0;background:transparent;color:var(--lm-wine)}

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LUCYMARY_VERSION', '0.2.29' );
+define( 'LUCYMARY_VERSION', '0.2.30' );
 require_once get_theme_file_path( 'inc/product-choices.php' );
 require_once get_theme_file_path( 'inc/engraving.php' );
 
@@ -215,6 +215,7 @@ function lucymary_assets() {
 		'cartNonce' => wp_create_nonce( 'lucymary_cart_quantity' ),
 		'favoriteAccount' => is_user_logged_in(),
 		'currencySymbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : 'R$',
+		'sizeGuidePdfUrl' => $base . '/assets/docs/Tabela-aro-lucymary.pdf',
 		'strings' => array(
 			'paymentCard' => __( 'Cartão', 'lucymary' ),
 			'paymentBoleto' => __( 'Boleto', 'lucymary' ),
@@ -230,7 +231,25 @@ function lucymary_assets() {
 			'ringNext' => __( 'Próximo aro', 'lucymary' ),
 			'ringGuide' => __( 'Tabela de medidas', 'lucymary' ),
 			'ringClose' => __( 'Fechar', 'lucymary' ),
-			'ringDialogText' => __( 'A tabela oficial de aros da LucyMary será adicionada aqui em breve.', 'lucymary' ),
+			'ringDialogText' => __( 'Encontre seu tamanho com as orientações abaixo. Para maior precisão, confirme a medida com um joalheiro.', 'lucymary' ),
+			'ringStringMethod' => __( 'MÉTODO 4 · Barbante', 'lucymary' ),
+			'ringStringTitle' => __( 'Medida com barbante ou fita', 'lucymary' ),
+			'ringStringIntro' => __( 'Meça a volta do dedo com um barbante, linha ou fita flexível. Este método é aproximado.', 'lucymary' ),
+			'ringStringStep1' => __( '1. Envolva a junta do dedo com o barbante sem apertar. O anel precisa passar por essa região.', 'lucymary' ),
+			'ringStringStep2' => __( '2. Marque o encontro das pontas, estenda o barbante e meça o comprimento com uma régua. Compare com a tabela.', 'lucymary' ),
+			'ringMeasureCm' => __( 'Medida em cm', 'lucymary' ),
+			'ringSize' => __( 'Aro', 'lucymary' ),
+			'ringMeasureWarning' => __( 'As medidas são aproximadas. A temperatura e a largura do anel podem alterar o ajuste; em caso de dúvida, confirme com um joalheiro.', 'lucymary' ),
+			'ringPrintMethod' => __( 'MÉTODO 5 · Impressão', 'lucymary' ),
+			'ringPrintTitle' => __( 'Impressão de aros', 'lucymary' ),
+			'ringPrintStep1' => __( '1. Abra e imprima o modelo de aros abaixo em tamanho real.', 'lucymary' ),
+			'ringPrintStep2' => __( '2. Escolha um anel que sirva no dedo desejado.', 'lucymary' ),
+			'ringPrintStep3' => __( '3. Coloque o anel sobre os círculos da folha impressa.', 'lucymary' ),
+			'ringPrintStep4' => __( '4. A borda interna do anel deve coincidir com a borda do círculo.', 'lucymary' ),
+			'ringPrintStep5' => __( '5. O número indicado no círculo é o tamanho do aro.', 'lucymary' ),
+			'ringPrintOpen' => __( 'Abrir modelo para impressão ↗', 'lucymary' ),
+			'ringPrintSettings' => __( 'Ao imprimir: papel A4, orientação retrato e escala 100%. Não use “ajustar à página”.', 'lucymary' ),
+			'ringPrintWarning' => __( 'Confira a escala indicada na folha com uma régua. Não meça o anel diretamente na tela.', 'lucymary' ),
 			'shippingInvalidPostcode' => __( 'Informe um CEP com 8 dígitos.', 'lucymary' ),
 			'shippingChooseOption' => __( 'Escolha as opções do produto antes de calcular o frete.', 'lucymary' ),
 			'shippingLoading' => __( 'Calculando frete…', 'lucymary' ),
@@ -238,7 +257,7 @@ function lucymary_assets() {
 			'shippingNoRates' => __( 'Não foi possível estimar o frete aqui. Confira as opções no carrinho.', 'lucymary' ),
 			'chooseProductOptions' => __( 'Escolha as opções da peça para continuar.', 'lucymary' ),
 			'engravingRequired' => __( 'Informe o texto da gravação antes de continuar.', 'lucymary' ),
-			'engravingInvalid' => sprintf( __( 'Use até %d letras ou símbolos para a gravação.', 'lucymary' ), lucymary_engraving_max_characters() ),
+			'engravingInvalid' => sprintf( __( 'Use até %d letras ou símbolos para a gravação; espaços não contam.', 'lucymary' ), lucymary_engraving_max_characters() ),
 			'waitForVariation' => __( 'Aguarde a confirmação da opção selecionada e tente novamente.', 'lucymary' ),
 			'cartUpdateError' => __( 'Não foi possível atualizar a sacola. Tente novamente.', 'lucymary' ),
 			'cartQuantityDecrease' => __( 'Diminuir quantidade', 'lucymary' ),
